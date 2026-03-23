@@ -133,9 +133,7 @@ async function fetchTransactions(page: Page, options: ScraperOptions) {
     (options.outputData?.enableTransactionsFilterByDate ?? true)
       ? filterOldTransactions(accountTransactions, startMoment, false)
       : accountTransactions;
-  debug(
-    `found ${txns.length} valid transactions out of ${accountTransactions.length} transactions for account ending with ${accountNumber.substring(accountNumber.length - 2)}`,
-  );
+  debug('found %d valid transactions out of %d after date filter', txns.length, accountTransactions.length);
 
   return {
     accountNumber,

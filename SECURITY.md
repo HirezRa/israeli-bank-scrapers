@@ -44,13 +44,15 @@ Run `npm audit` regularly and upgrade patch/minor versions when they address vul
 
 ### npm audit triage (snapshot — re-run `npm audit` after lockfile changes)
 
+`npm audit fix` (without `--force`) is applied when it only adjusts compatible transitive versions. Remaining issues are documented below.
+
 | Package | Severity | Direct / transitive | How it enters the graph | Reachable at runtime? | Action |
 |--------|----------|----------------------|-------------------------|------------------------|--------|
 | **basic-ftp** | was critical | transitive (`puppeteer` → `@puppeteer/browsers` → … → `get-uri`) | Browser download / proxy stack | Not used for scraping logic; no `downloadToDir` from app code | **Mitigated:** `overrides` force `basic-ftp@^5.2.0` |
-| **ajv** | moderate | transitive (`eslint` / config tooling) | Lint only | **No** (dev) | Defer: upgrade ESLint toolchain in a dedicated PR |
-| **flatted** | high | transitive (`eslint` → `file-entry-cache` → `flat-cache`) | Lint only | **No** | Defer: same as ESLint upgrade |
-| **lodash** | moderate | **direct** + dev | App + `prettier-eslint` | **Yes** for runtime lodash | Bumped to `^4.17.21`; if audit still flags a range without a newer 4.x patch, track upstream [GHSA-xxjr-mmjv-4gpg](https://github.com/advisories/GHSA-xxjr-mmjv-4gpg) |
-| **minimatch** | high | transitive (eslint, jest, glob, prettier-eslint) | Build / test / lint | **No** in published scraper runtime | Defer: requires coordinated ESLint / prettier-eslint major bumps (`npm audit fix --force` is disruptive) |
+| **ajv** | moderate | transitive (`eslint` / config tooling) | Lint only | **No** (dev) | Addressed when compatible: `npm audit fix` pulled patched releases where possible |
+| **flatted** | high | transitive (`eslint` → `file-entry-cache` → `flat-cache`) | Lint only | **No** | Same as ajv — dev-only chain |
+| **lodash** | moderate | **direct** + dev | App + `prettier-eslint` | **Yes** for runtime lodash | `^4.17.21`; advisory may persist until a patched 4.x is published in range — track [GHSA-xxjr-mmjv-4gpg](https://github.com/advisories/GHSA-xxjr-mmjv-4gpg) |
+| **minimatch** | high | transitive (`prettier-eslint` → `@typescript-eslint/*`) | Format-on-lint tooling | **No** in published scraper runtime | **Defer:** fixing requires `npm audit fix --force`, which downgrades `prettier-eslint` and is a breaking toolchain change — handle in a dedicated dev-deps PR |
 
 **Puppeteer:** npm reports the pinned major as deprecated; upgrading to ≥24.x is a **separate PR** (Chromium behavior, breaking API risk).
 

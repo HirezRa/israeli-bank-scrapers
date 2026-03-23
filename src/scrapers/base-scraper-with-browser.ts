@@ -287,7 +287,7 @@ class BaseScraperWithBrowser<TCredentials extends ScraperCredentials> extends Ba
     debug('check login result');
     const current = await getCurrentUrl(this.page, true);
     const loginResult = await getKeyByValue(loginOptions.possibleResults, current, this.page);
-    debug(`handle login results ${loginResult}`);
+    debug('handle login results %s', loginResult);
     return this.handleLoginResult(loginResult);
   }
 

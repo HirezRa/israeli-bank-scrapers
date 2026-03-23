@@ -283,7 +283,7 @@ async function getExtraScrapTransaction(
   url.searchParams.set('shovarRatz', transaction.identifier!.toString());
   url.searchParams.set('moedChiuv', month.format('MMYYYY'));
 
-  debug(`fetching extra scrap for transaction ${transaction.identifier} for month ${month.format('YYYY-MM')}`);
+  debug('fetching extra scrap for one transaction (month=%s)', month.format('YYYY-MM'));
   const data = await fetchGetWithinPage<ScrapedTransactionData>(page, url.toString());
   if (!data) {
     return transaction;
@@ -306,7 +306,9 @@ async function getExtraScrapAccount(
   const accounts: ScrapedAccountsWithIndex[string][] = [];
   for (const account of Object.values(accountMap)) {
     debug(
-      `get extra scrap for ${account.accountNumber} with ${account.txns.length} transactions`,
+      'get extra scrap for account index=%d with %d transactions (month=%s)',
+      account.index,
+      account.txns.length,
       month.format('YYYY-MM'),
     );
     const txns: Transaction[] = [];

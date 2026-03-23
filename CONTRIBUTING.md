@@ -18,6 +18,8 @@ In order to run **live institution** tests you should create test configuration 
 > **Secrets:** Never commit real credentials, `TESTS_CONFIG` JSON with live passwords, OTP secrets, or scraped transaction exports. In CI, prefer mock-based tests; integration tests with real banks belong in private runners. See [SECURITY.md](./SECURITY.md) for runtime hardening (`NODE_ENV`, `CI`, `ALLOW_SENSITIVE_DEBUG`).
 
 > **Maintainers:** New code must not log full URLs with query strings, raw HTTP bodies, or institute `error.message` blobs—use `sanitizeUrlForLogs`, `redactDeep`, and `sanitizeExternalServiceMessage`. See SECURITY.md “Maintainer guardrails”.
+>
+> Do not pass **transaction descriptions**, merchant text, **account/card numbers**, or **phone numbers** into `debug()`—use counts, indices, or sanitized summaries only. Regression coverage lives in `src/helpers/logging-policy.test.ts`.
 
 This library supports both testing against credit card companies / banks api and also against mock data. Until we will have a good coverage of scrapers test with mock data, the default configuration is set to execute real companies api tests.
 
