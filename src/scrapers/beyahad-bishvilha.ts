@@ -10,6 +10,7 @@ import {
 } from '../constants';
 import { getDebug } from '../helpers/debug';
 import { pageEval, pageEvalAll, waitUntilElementFound } from '../helpers/elements-interactions';
+import { isIncludeRawTransactionEnabled } from '../helpers/sensitive-options';
 import { getRawTransaction, filterOldTransactions } from '../helpers/transactions';
 import { TransactionStatuses, TransactionTypes, type Transaction } from '../transactions';
 import { BaseScraperWithBrowser, LoginResults, type PossibleLoginResults } from './base-scraper-with-browser';
@@ -75,7 +76,7 @@ function convertTransactions(txns: ScrapedTransaction[], options?: ScraperOption
       identifier: txn.identifier,
     };
 
-    if (options?.includeRawTransaction) {
+    if (isIncludeRawTransactionEnabled(options)) {
       result.rawTransaction = getRawTransaction(txn);
     }
 
@@ -132,9 +133,7 @@ async function fetchTransactions(page: Page, options: ScraperOptions) {
     (options.outputData?.enableTransactionsFilterByDate ?? true)
       ? filterOldTransactions(accountTransactions, startMoment, false)
       : accountTransactions;
-  debug(
-    `found ${txns.length} valid transactions out of ${accountTransactions.length} transactions for account ending with ${accountNumber.substring(accountNumber.length - 2)}`,
-  );
+  debug('found %d valid transactions out of %d after date filter', txns.length, accountTransactions.length);
 
   return {
     accountNumber,

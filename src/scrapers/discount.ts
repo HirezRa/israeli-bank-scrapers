@@ -4,6 +4,7 @@ import { type Page } from 'puppeteer';
 import { waitUntilElementFound } from '../helpers/elements-interactions';
 import { fetchGetWithinPage } from '../helpers/fetch';
 import { waitForNavigation } from '../helpers/navigation';
+import { isIncludeRawTransactionEnabled } from '../helpers/sensitive-options';
 import { getRawTransaction } from '../helpers/transactions';
 import { type Transaction, TransactionStatuses, TransactionTypes } from '../transactions';
 import { BaseScraperWithBrowser, LoginResults, type PossibleLoginResults } from './base-scraper-with-browser';
@@ -68,7 +69,7 @@ function convertTransactions(
       status: txnStatus,
     };
 
-    if (options?.includeRawTransaction) {
+    if (isIncludeRawTransactionEnabled(options)) {
       result.rawTransaction = getRawTransaction(txn);
     }
 

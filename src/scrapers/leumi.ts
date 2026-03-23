@@ -3,6 +3,8 @@ import { type Page } from 'puppeteer';
 import { SHEKEL_CURRENCY } from '../constants';
 import { getDebug } from '../helpers/debug';
 import { clickButton, fillInput, pageEval, pageEvalAll, waitUntilElementFound } from '../helpers/elements-interactions';
+import { sanitizeUrlForLogs } from '../helpers/safe-error';
+import { isIncludeRawTransactionEnabled } from '../helpers/sensitive-options';
 import { getRawTransaction } from '../helpers/transactions';
 import { waitForNavigation } from '../helpers/navigation';
 import { TransactionStatuses, TransactionTypes, type Transaction, type TransactionsAccount } from '../transactions';
@@ -83,7 +85,7 @@ function extractTransactionsFromPage(
       originalAmount: rawTransaction.Amount,
     };
 
-    if (options?.includeRawTransaction) {
+    if (isIncludeRawTransactionEnabled(options)) {
       newTransaction.rawTransaction = getRawTransaction(rawTransaction);
     }
 
@@ -201,7 +203,7 @@ async function navigateToLogin(page: Page): Promise<void> {
   const loginUrl = await pageEval(page, loginButtonSelector, null, element => {
     return (element as any).href;
   });
-  debug(`navigating to page (${loginUrl})`);
+  debug(`navigating to page (${sanitizeUrlForLogs(loginUrl)})`);
   await page.goto(loginUrl);
   debug('waiting for page to be loaded (networkidle2)');
   await waitForNavigation(page, { waitUntil: 'networkidle2' });

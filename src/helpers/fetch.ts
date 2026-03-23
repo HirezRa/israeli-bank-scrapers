@@ -1,5 +1,6 @@
 import nodeFetch from 'node-fetch';
 import { type Page } from 'puppeteer';
+import { createSafeInPageFetchError, sanitizeExternalServiceMessage, sanitizeUrlForLogs } from './safe-error';
 
 const JSON_CONTENT_TYPE = 'application/json';
 
@@ -22,7 +23,7 @@ export async function fetchGet<TResult>(url: string, extraHeaders: Record<string
   const fetchResult = await nodeFetch(url, request);
 
   if (fetchResult.status !== 200) {
-    throw new Error(`sending a request to the institute server returned with status code ${fetchResult.status}`);
+    throw new Error(`request to institute server failed with HTTP ${fetchResult.status} (${sanitizeUrlForLogs(url)})`);
   }
 
   return fetchResult.json();
@@ -50,7 +51,8 @@ export async function fetchGraphql<TResult>(
 ): Promise<TResult> {
   const result = await fetchPost(url, { operationName: null, query, variables }, extraHeaders);
   if (result.errors?.length) {
-    throw new Error(result.errors[0].message);
+    const raw = result.errors[0]?.message;
+    throw new Error(sanitizeExternalServiceMessage(raw));
   }
   return result.data as Promise<TResult>;
 }
@@ -68,10 +70,10 @@ export async function fetchGetWithinPage<TResult>(
         return [null, response.status] as const;
       }
       return [await response.text(), response.status] as const;
-    } catch (e) {
-      throw new Error(
-        `fetchGetWithinPage error: ${e instanceof Error ? `${e.message}\n${e.stack}` : String(e)}, url: ${innerUrl}, status: ${response?.status}`,
-      );
+    } catch {
+      const noHash = innerUrl.split('#')[0] ?? innerUrl;
+      const where = noHash.split('?')[0];
+      throw new Error(`fetchGetWithinPage: network error for ${where} (status=${response?.status ?? 'n/a'})`);
     }
   }, url);
   if (result !== null) {
@@ -79,9 +81,7 @@ export async function fetchGetWithinPage<TResult>(
       return JSON.parse(result);
     } catch (e) {
       if (!ignoreErrors) {
-        throw new Error(
-          `fetchGetWithinPage parse error: ${e instanceof Error ? `${e.message}\n${e.stack}` : String(e)}, url: ${url}, result: ${result}, status: ${status}`,
-        );
+        throw createSafeInPageFetchError('fetchGetWithinPage', url, 'parse', status);
       }
     }
   }
@@ -121,11 +121,9 @@ export async function fetchPostWithinPage<TResult>(
     if (result !== null) {
       return JSON.parse(result);
     }
-  } catch (e) {
+  } catch {
     if (!ignoreErrors) {
-      throw new Error(
-        `fetchPostWithinPage parse error: ${e instanceof Error ? `${e.message}\n${e.stack}` : String(e)}, url: ${url}, data: ${JSON.stringify(data)}, extraHeaders: ${JSON.stringify(extraHeaders)}, result: ${result}`,
-      );
+      throw new Error(`fetchPostWithinPage: JSON parse failed for ${sanitizeUrlForLogs(url)}`);
     }
   }
   return null;

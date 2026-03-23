@@ -5,6 +5,9 @@ import { clickButton, elementPresentOnPage, pageEval, waitUntilElementFound } fr
 import { fetchPost } from '../helpers/fetch';
 import { getCurrentUrl, waitForNavigation } from '../helpers/navigation';
 import { getFromSessionStorage } from '../helpers/storage';
+import { redactDeep } from '../helpers/redaction';
+import { sanitizeExternalServiceMessage } from '../helpers/safe-error';
+import { isIncludeRawTransactionEnabled } from '../helpers/sensitive-options';
 import { filterOldTransactions, getRawTransaction } from '../helpers/transactions';
 import { waitUntil } from '../helpers/waiting';
 import { TransactionStatuses, TransactionTypes, type Transaction, type TransactionsAccount } from '../transactions';
@@ -331,7 +334,7 @@ function convertParsedDataToTransactions(
       result.installments = installments;
     }
 
-    if (options?.includeRawTransaction) {
+    if (isIncludeRawTransactionEnabled(options)) {
       result.rawTransaction = getRawTransaction(transaction);
     }
 
@@ -412,7 +415,7 @@ class VisaCalScraper extends BaseScraperWithBrowser<ScraperSpecificCredentials> 
     this.authRequestPromise = this.page
       .waitForRequest(SSO_AUTHORIZATION_REQUEST_ENDPOINT, { timeout: 10_000 })
       .catch(e => {
-        debug('error while waiting for the token request', e);
+        debug('error while waiting for the token request', redactDeep(e));
         return undefined;
       });
     return {
@@ -476,7 +479,7 @@ class VisaCalScraper extends BaseScraperWithBrowser<ScraperSpecificCredentials> 
         const allMonthsData: CardTransactionDetails[] = [];
         const frame = _.find(frames.result?.bankIssuedCards?.cardLevelFrames, { cardUniqueId: card.cardUniqueId });
 
-        debug(`fetch pending transactions for card ${card.cardUniqueId}`);
+        debug('fetch pending transactions for one card');
         let pendingData = await fetchPost(
           PENDING_TRANSACTIONS_REQUEST_ENDPOINT,
           { cardUniqueIDArray: [card.cardUniqueId] },
@@ -488,7 +491,7 @@ class VisaCalScraper extends BaseScraperWithBrowser<ScraperSpecificCredentials> 
           },
         );
 
-        debug(`fetch completed transactions for card ${card.cardUniqueId}`);
+        debug('fetch completed transactions for one card');
         for (let i = 0; i <= months; i++) {
           const month = finalMonthToFetchMoment.clone().subtract(i, 'months');
           const monthData = await fetchPost(
@@ -502,10 +505,12 @@ class VisaCalScraper extends BaseScraperWithBrowser<ScraperSpecificCredentials> 
             },
           );
 
-          if (monthData?.statusCode !== 1)
+          if (monthData?.statusCode !== 1) {
+            const detail = sanitizeExternalServiceMessage(monthData?.title ?? '');
             throw new Error(
-              `failed to fetch transactions for card ${card.last4Digits}. Message: ${monthData?.title || ''}`,
+              `failed to fetch transactions (card index, status ${String(monthData?.statusCode)}) ${detail}`.trim(),
             );
+          }
 
           if (!isCardTransactionDetails(monthData)) {
             throw new Error('monthData is not of type CardTransactionDetails');
@@ -516,7 +521,9 @@ class VisaCalScraper extends BaseScraperWithBrowser<ScraperSpecificCredentials> 
 
         if (pendingData?.statusCode !== 1 && pendingData?.statusCode !== 96) {
           debug(
-            `failed to fetch pending transactions for card ${card.last4Digits}. Message: ${pendingData?.title || ''}`,
+            'failed to fetch pending transactions (status=%s) %s',
+            String(pendingData?.statusCode),
+            sanitizeExternalServiceMessage(pendingData?.title ?? ''),
           );
           pendingData = null;
         } else if (!isCardPendingTransactionDetails(pendingData)) {
@@ -540,9 +547,7 @@ class VisaCalScraper extends BaseScraperWithBrowser<ScraperSpecificCredentials> 
       }),
     );
 
-    debug('return the scraped accounts');
-
-    debug(JSON.stringify(accounts, null, 2));
+    debug('return the scraped accounts (count=%d)', accounts.length);
     return {
       success: true,
       accounts,
