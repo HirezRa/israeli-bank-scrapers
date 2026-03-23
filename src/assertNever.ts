@@ -1,3 +1,3 @@
-export function assertNever(x: never, error = ''): never {
-  throw new Error(error || `Unexpected object: ${x as any}`);
+export function assertNever(_never: never, error = ''): never {
+  throw new Error(error || 'Unexpected internal branch');
 }

@@ -1,6 +1,8 @@
 import puppeteer, { type Frame, type Page, type PuppeteerLifeCycleEvent } from 'puppeteer';
 import { ScraperProgressTypes } from '../definitions';
 import { getDebug } from '../helpers/debug';
+import { publicErrorMessageFromUnknown, sanitizeUrlForLogs } from '../helpers/safe-error';
+import { isRestrictedRuntime, isSensitiveDebugExplicitlyAllowed } from '../helpers/runtime-mode';
 import { clickButton, fillInput, waitUntilElementFound } from '../helpers/elements-interactions';
 import { getCurrentUrl, waitForNavigation } from '../helpers/navigation';
 import { BaseScraper } from './base-scraper';
@@ -79,7 +81,7 @@ async function safeCleanup(cleanup: () => Promise<void>) {
   try {
     await cleanup();
   } catch (e) {
-    debug(`Cleanup function failed: ${(e as Error).message}`);
+    debug(`Cleanup function failed: ${publicErrorMessageFromUnknown(e)}`);
   }
 }
 
@@ -133,7 +135,7 @@ class BaseScraperWithBrowser<TCredentials extends ScraperCredentials> extends Ba
     });
 
     this.page.on('requestfailed', request => {
-      debug('Request failed: %s %s', request.failure()?.errorText, request.url());
+      debug('Request failed: %s %s', request.failure()?.errorText, sanitizeUrlForLogs(request.url()));
     });
   }
 
@@ -201,16 +203,18 @@ class BaseScraperWithBrowser<TCredentials extends ScraperCredentials> extends Ba
     }
 
     if (!response) {
-      throw new Error(`Error while trying to navigate to url ${url}, response is undefined`);
+      throw new Error(`Error while trying to navigate to url ${sanitizeUrlForLogs(url)}, response is undefined`);
     }
 
     if (!response.ok()) {
       const status = response.status();
       if (retries > 0) {
-        debug(`Failed to navigate to url ${url}, status code: ${status}, retrying ${retries} more times`);
+        debug(
+          `Failed to navigate to url ${sanitizeUrlForLogs(url)}, status code: ${status}, retrying ${retries} more times`,
+        );
         await this.navigateTo(url, waitUntil, retries - 1);
       } else {
-        throw new Error(`Failed to navigate to url ${url}, status code: ${status}`);
+        throw new Error(`Failed to navigate to url ${sanitizeUrlForLogs(url)}, status code: ${status}`);
       }
     }
   }
@@ -283,7 +287,7 @@ class BaseScraperWithBrowser<TCredentials extends ScraperCredentials> extends Ba
     debug('check login result');
     const current = await getCurrentUrl(this.page, true);
     const loginResult = await getKeyByValue(loginOptions.possibleResults, current, this.page);
-    debug(`handle login results ${loginResult}`);
+    debug('handle login results %s', loginResult);
     return this.handleLoginResult(loginResult);
   }
 
@@ -291,10 +295,13 @@ class BaseScraperWithBrowser<TCredentials extends ScraperCredentials> extends Ba
     debug(`terminating browser with success = ${_success}`);
     this.emitProgress(ScraperProgressTypes.Terminating);
 
-    if (!_success && !!this.options.storeFailureScreenShotPath) {
-      debug(`create a snapshot before terminated in ${this.options.storeFailureScreenShotPath}`);
+    const failureShotPath = this.options.storeFailureScreenShotPath;
+    const allowFailureScreenshot = !!failureShotPath && (!isRestrictedRuntime() || isSensitiveDebugExplicitlyAllowed());
+
+    if (!_success && allowFailureScreenshot) {
+      debug('create a failure screenshot (path set via storeFailureScreenShotPath)');
       await this.page.screenshot({
-        path: this.options.storeFailureScreenShotPath,
+        path: failureShotPath,
         fullPage: true,
       });
     }

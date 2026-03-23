@@ -8,11 +8,14 @@ import {
   waitUntilIframeFound,
 } from '../helpers/elements-interactions';
 import { fetchPostWithinPage } from '../helpers/fetch';
+import { sanitizeExternalServiceMessage } from '../helpers/safe-error';
 import { waitForUrl } from '../helpers/navigation';
 import { type Transaction, TransactionStatuses, TransactionTypes, type TransactionsAccount } from '../transactions';
 import { BaseScraperWithBrowser, LoginResults, type PossibleLoginResults } from './base-scraper-with-browser';
 import { ScraperErrorTypes } from './errors';
 import { getDebug } from '../helpers/debug';
+import { redactDeep } from '../helpers/redaction';
+import { isIncludeRawTransactionEnabled } from '../helpers/sensitive-options';
 import { getRawTransaction } from '../helpers/transactions';
 import { type ScraperOptions } from './interface';
 
@@ -139,7 +142,7 @@ async function getExtraTransactionDetails(
   apiHeaders: Record<string, string>,
 ): Promise<MoreDetails> {
   try {
-    debug('getExtraTransactionDetails for item:', item);
+    debug('getExtraTransactionDetails: flow enabled (MC02ShowDetailsEZ=%s)', item.MC02ShowDetailsEZ);
     if (item.MC02ShowDetailsEZ === '1') {
       const tarPeula = moment(item.MC02PeulaTaaEZ);
       const tarErech = moment(item.MC02ErehTaaEZ);
@@ -160,7 +163,11 @@ async function getExtraTransactionDetails(
 
       const response = await fetchPostWithinPage<MoreDetailsResponse>(page, MORE_DETAILS_URL, params, apiHeaders);
       const details = response?.body.fields?.[0]?.[0]?.Records?.[0].Fields;
-      debug('fetch details for', params, 'details:', details);
+      debug(
+        'fetch details: response received (paramKeys=%d, detailRows=%s)',
+        Object.keys(params).length,
+        Array.isArray(details) ? String(details.length) : '0',
+      );
       if (Array.isArray(details) && details.length > 0) {
         const entries = details.map(record => [record.Label.trim(), record.Value.trim()]);
         return {
@@ -173,7 +180,7 @@ async function getExtraTransactionDetails(
       }
     }
   } catch (error) {
-    debug('Error fetching extra transaction details:', error);
+    debug('Error fetching extra transaction details:', redactDeep(error));
   }
 
   return {
@@ -237,7 +244,7 @@ async function convertTransactions(
             : TransactionStatuses.Completed,
       };
 
-      if (options?.includeRawTransaction) {
+      if (isIncludeRawTransactionEnabled(options)) {
         result.rawTransaction = getRawTransaction({
           ...row,
           additionalInformation: moreDetails.entries,
@@ -364,9 +371,8 @@ class MizrahiScraper extends BaseScraperWithBrowser<ScraperSpecificCredentials> 
     );
 
     if (!response || response.header.success === false) {
-      throw new Error(
-        `Error fetching transaction. Response message: ${response ? response.header.messages[0].text : ''}`,
-      );
+      const rawMsg = response?.header?.messages?.[0]?.text;
+      throw new Error(sanitizeExternalServiceMessage(rawMsg ?? 'transaction request failed'));
     }
 
     const relevantRows = response.body.table.rows.filter(row => row.RecTypeSpecified);
@@ -401,7 +407,7 @@ class MizrahiScraper extends BaseScraperWithBrowser<ScraperSpecificCredentials> 
 
   private shouldMarkAsPending(txn: Transaction): boolean {
     if (this.options.optInFeatures?.includes('mizrahi:pendingIfNoIdentifier') && !txn.identifier) {
-      debug(`Marking transaction '${txn.description}' as pending due to no identifier.`);
+      debug('Marking one transaction as pending due to no identifier (opt-in mizrahi:pendingIfNoIdentifier)');
       return true;
     }
 
@@ -409,7 +415,9 @@ class MizrahiScraper extends BaseScraperWithBrowser<ScraperSpecificCredentials> 
       this.options.optInFeatures?.includes('mizrahi:pendingIfHasGenericDescription') &&
       genericDescriptions.includes(txn.description)
     ) {
-      debug(`Marking transaction '${txn.description}' as pending due to generic description.`);
+      debug(
+        'Marking one transaction as pending due to generic description (opt-in mizrahi:pendingIfHasGenericDescription)',
+      );
       return true;
     }
 

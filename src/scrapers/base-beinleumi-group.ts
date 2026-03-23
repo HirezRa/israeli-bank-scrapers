@@ -9,6 +9,7 @@ import {
   waitUntilElementFound,
 } from '../helpers/elements-interactions';
 import { waitForNavigation } from '../helpers/navigation';
+import { isIncludeRawTransactionEnabled } from '../helpers/sensitive-options';
 import { getRawTransaction } from '../helpers/transactions';
 import { sleep } from '../helpers/waiting';
 import { TransactionStatuses, TransactionTypes, type Transaction, type TransactionsAccount } from '../transactions';
@@ -96,7 +97,7 @@ function convertTransactions(txns: ScrapedTransaction[], options?: ScraperOption
       memo: txn.memo,
     };
 
-    if (options?.includeRawTransaction) {
+    if (isIncludeRawTransactionEnabled(options)) {
       result.rawTransaction = getRawTransaction(txn);
     }
 

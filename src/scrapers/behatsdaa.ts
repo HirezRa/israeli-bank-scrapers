@@ -3,6 +3,8 @@ import { getDebug } from '../helpers/debug';
 import { waitUntilElementFound } from '../helpers/elements-interactions';
 import { fetchPostWithinPage } from '../helpers/fetch';
 import { sleep } from '../helpers/waiting';
+import { redactDeep } from '../helpers/redaction';
+import { isIncludeRawTransactionEnabled } from '../helpers/sensitive-options';
 import { getRawTransaction } from '../helpers/transactions';
 import { type Transaction, TransactionStatuses, TransactionTypes } from '../transactions';
 import { BaseScraperWithBrowser, type LoginOptions, LoginResults } from './base-scraper-with-browser';
@@ -50,7 +52,7 @@ function variantToTransaction(variant: Variant, options?: ScraperOptions): Trans
     memo: variant.variantName,
   };
 
-  if (options?.includeRawTransaction) {
+  if (isIncludeRawTransactionEnabled(options)) {
     result.rawTransaction = getRawTransaction(variant);
   }
 
@@ -116,7 +118,7 @@ class BehatsdaaScraper extends BaseScraperWithBrowser<ScraperSpecificCredentials
     debug('Data fetched');
 
     if (res?.errorDescription || res?.data?.errorDescription) {
-      debug('Error fetching data', res.errorDescription || res.data?.errorDescription);
+      debug('Error fetching data', redactDeep(res.errorDescription || res.data?.errorDescription));
       return { success: false, errorMessage: res.errorDescription };
     }
 

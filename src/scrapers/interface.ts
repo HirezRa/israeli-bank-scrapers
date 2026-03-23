@@ -59,7 +59,8 @@ interface ExternalBrowserContextOptions {
 
 interface DefaultBrowserOptions {
   /**
-   * shows the browser while scraping, good for debugging (default false)
+   * Shows the browser while scraping (default false). For security, this is forced off when
+   * `NODE_ENV=production` or `CI` is truthy unless `ALLOW_SENSITIVE_DEBUG=1`.
    */
   showBrowser?: boolean;
 
@@ -100,7 +101,8 @@ export type ScraperOptions = ScraperBrowserOptions & {
   companyId: CompanyTypes;
 
   /**
-   * include more debug info about in the output
+   * Include more debug info in the output (e.g. enables verbose puppeteer `DEBUG` output).
+   * Forced off in production/CI unless `ALLOW_SENSITIVE_DEBUG=1`.
    */
   verbose?: boolean;
 
@@ -127,7 +129,8 @@ export type ScraperOptions = ScraperBrowserOptions & {
   preparePage?: (page: Page) => Promise<void>;
 
   /**
-   * if set, store a screenshot if failed to scrape. Used for debug purposes
+   * If set, store a failure screenshot for debugging. Disabled in production/CI unless
+   * `ALLOW_SENSITIVE_DEBUG=1` (screenshots can expose balances, account numbers, and PII).
    */
   storeFailureScreenShotPath?: string;
 
@@ -149,7 +152,7 @@ export type ScraperOptions = ScraperBrowserOptions & {
 
   /**
    * Include the raw transaction object as received from the scraper source for debugging purposes.
-   * @default false
+   * @default false. Disabled in production/CI unless `ALLOW_SENSITIVE_DEBUG=1`.
    */
   includeRawTransaction?: boolean;
 

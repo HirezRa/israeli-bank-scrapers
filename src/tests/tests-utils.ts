@@ -2,6 +2,7 @@ import fs from 'fs';
 import { Parser } from '@json2csv/plainjs';
 import moment from 'moment';
 import path from 'path';
+import { sanitizeExternalServiceMessage } from '../helpers/safe-error';
 import { type TransactionsAccount } from '../transactions';
 
 let testsConfig: Record<string, any>;
@@ -28,16 +29,24 @@ export function getTestsConfig() {
       return testsConfig;
     }
   } catch (e) {
-    throw new Error(`failed to parse environment variable 'TESTS_CONFIG' with error '${(e as Error).message}'`);
+    throw new Error(
+      `failed to parse environment variable 'TESTS_CONFIG' with error '${sanitizeExternalServiceMessage((e as Error).message)}'`,
+    );
   }
 
+  const userConfigPath = path.join(__dirname, '.tests-config.js');
   try {
-    const configPath = path.join(__dirname, '.tests-config.js');
-    testsConfig = require(configPath);
+    testsConfig = require(userConfigPath);
     return testsConfig;
-  } catch (e) {
-    console.error(e);
-    throw new Error(MISSING_ERROR_MESSAGE);
+  } catch {
+    try {
+      const defaultsPath = path.join(__dirname, 'tests-config.defaults.js');
+      testsConfig = require(defaultsPath);
+      return testsConfig;
+    } catch {
+      console.error('[tests] Failed to load .tests-config.js — see CONTRIBUTING.md (F.A.Q regarding the tests).');
+      throw new Error(MISSING_ERROR_MESSAGE);
+    }
   }
 }
 

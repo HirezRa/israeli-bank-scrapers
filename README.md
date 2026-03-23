@@ -34,6 +34,18 @@ Currently only the following banks are supported:
 - OneZero (Experimental) (thanks [@orzarchi](https://github.com/orzarchi))
 - Behatsdaa - [בהצדעה](behatsdaa.org.il) (thanks [@daniel-hauser](https://github.com/daniel-hauser))
 
+# Security & privacy
+
+This project handles **real financial credentials and data**. See **[SECURITY.md](./SECURITY.md)** for:
+
+- production / CI defaults (`NODE_ENV`, `CI`, `ALLOW_SENSITIVE_DEBUG`);
+- that **`BaseScraper` enforces the same defaults for `createScraper()` and for direct `new SomeScraper(opts)`**;
+- safe logging, URL sanitization (`sanitizeUrlForLogs`), and error handling;
+- how `includeRawTransaction`, failure screenshots, and `verbose` / `showBrowser` are restricted in restricted runtimes;
+- testing without leaking secrets.
+
+When pasting code samples or opening issues/PRs, **never** include real passwords, OTPs, tokens, or unredacted bank responses.
+
 # Prerequisites
 To use this you will need to have [Node.js](https://nodejs.org) >= 22.12.0 installed.
 
@@ -54,13 +66,14 @@ import { CompanyTypes, createScraper } from 'israeli-bank-scrapers';
       companyId: CompanyTypes.leumi, 
       startDate: new Date('2020-05-01'),
       combineInstallments: false,
-      showBrowser: true 
+      showBrowser: false
     };
 
     // read documentation below for information about credentials
+    // Use mock credentials only — never real banking passwords in source control or logs.
     const credentials = {
-      username: 'vr29485',
-      password: 'sometingsomething'
+      username: 'demo_user',
+      password: 'demo_password'
     };
 
     const scraper = createScraper(options);

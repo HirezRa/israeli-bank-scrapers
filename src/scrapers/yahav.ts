@@ -9,6 +9,8 @@ import {
   waitUntilElementFound,
 } from '../helpers/elements-interactions';
 import { waitForNavigation } from '../helpers/navigation';
+import { sanitizeExternalServiceMessage } from '../helpers/safe-error';
+import { isIncludeRawTransactionEnabled } from '../helpers/sensitive-options';
 import { getRawTransaction } from '../helpers/transactions';
 import { TransactionStatuses, TransactionTypes, type Transaction, type TransactionsAccount } from '../transactions';
 import { BaseScraperWithBrowser, LoginResults, type PossibleLoginResults } from './base-scraper-with-browser';
@@ -67,9 +69,7 @@ async function getAccountID(page: Page): Promise<string> {
     return selectedSnifAccount;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    throw new Error(
-      `Failed to retrieve account ID. Possible outdated selector '${ACCOUNT_ID_SELECTOR}: ${errorMessage}`,
-    );
+    throw new Error(`Failed to retrieve account ID (selector issue) ${sanitizeExternalServiceMessage(errorMessage)}`);
   }
 }
 
@@ -103,7 +103,7 @@ function convertTransactions(txns: ScrapedTransaction[], options?: ScraperOption
       memo: txn.memo,
     };
 
-    if (options?.includeRawTransaction) {
+    if (isIncludeRawTransactionEnabled(options)) {
       result.rawTransaction = getRawTransaction(txn);
     }
 
