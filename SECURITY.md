@@ -44,15 +44,14 @@ Run `npm audit` regularly and upgrade patch/minor versions when they address vul
 
 ### npm audit triage (snapshot — re-run `npm audit` after lockfile changes)
 
-`npm audit fix` (without `--force`) is applied when it only adjusts compatible transitive versions. Remaining issues are documented below.
+The **`prettier-eslint`** package was removed (PR4): lint already ran **ESLint** and **Prettier** separately; the extra dependency only pulled a vulnerable nested `minimatch` chain without being invoked by any script.
+
+`npm audit` was **clean** (`0` findings) after that removal at the time of the last lockfile refresh. Re-run after upgrades; new advisories in **dev-only** tools (ESLint, Jest, etc.) may appear and should be triaged similarly.
 
 | Package | Severity | Direct / transitive | How it enters the graph | Reachable at runtime? | Action |
 |--------|----------|----------------------|-------------------------|------------------------|--------|
 | **basic-ftp** | was critical | transitive (`puppeteer` → `@puppeteer/browsers` → … → `get-uri`) | Browser download / proxy stack | Not used for scraping logic; no `downloadToDir` from app code | **Mitigated:** `overrides` force `basic-ftp@^5.2.0` |
-| **ajv** | moderate | transitive (`eslint` / config tooling) | Lint only | **No** (dev) | Addressed when compatible: `npm audit fix` pulled patched releases where possible |
-| **flatted** | high | transitive (`eslint` → `file-entry-cache` → `flat-cache`) | Lint only | **No** | Same as ajv — dev-only chain |
-| **lodash** | moderate | **direct** + dev | App + `prettier-eslint` | **Yes** for runtime lodash | `^4.17.21`; advisory may persist until a patched 4.x is published in range — track [GHSA-xxjr-mmjv-4gpg](https://github.com/advisories/GHSA-xxjr-mmjv-4gpg) |
-| **minimatch** | high | transitive (`prettier-eslint` → `@typescript-eslint/*`) | Format-on-lint tooling | **No** in published scraper runtime | **Defer:** fixing requires `npm audit fix --force`, which downgrades `prettier-eslint` and is a breaking toolchain change — handle in a dedicated dev-deps PR |
+| **lodash** | moderate | **direct** (runtime) | App code | **Yes** | `^4.17.21`; if npm reports [GHSA-xxjr-mmjv-4gpg](https://github.com/advisories/GHSA-xxjr-mmjv-4gpg) again, track patched 4.x in range |
 
 **Puppeteer:** npm reports the pinned major as deprecated; upgrading to ≥24.x is a **separate PR** (Chromium behavior, breaking API risk).
 

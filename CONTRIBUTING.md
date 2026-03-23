@@ -10,6 +10,9 @@ Any kind of help is welcome, even if you just discover an issue and don't have t
 ## Filing issues
 While there's no specific template for creating a new issue, please take the time to create a clear description so that it is easy to understand the problem.
 
+## Code style
+`npm run lint` runs **ESLint** on TypeScript under `src/`, then **Prettier** (`format:check`). Use `npm run format` to apply Prettier fixes. ESLint and Prettier are separate steps (no `prettier-eslint` wrapper).
+
 ## Testing the scrapers
 In order to run **live institution** tests you should create test configuration file `./src/tests/.tests-config.js` from template `./src/tests/.tests-config.tpl.js`. If that file is missing, Jest falls back to `./src/tests/tests-config.defaults.js` (no real API calls; `companyAPI.enabled: false`) so unit tests and CI can run without credentials. 
 
