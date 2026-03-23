@@ -117,7 +117,7 @@ export default class OneZeroScraper extends BaseScraper<ScraperSpecificCredentia
       resultData: { deviceToken },
     } = deviceTokenResponse;
 
-    debug(`Sending OTP to phone number ${phoneNumber}`);
+    debug('Sending OTP to phone (redacted, length=%d)', phoneNumber.length);
 
     const otpPrepareResponse = await fetchPost(`${IDENTITY_SERVER_URL}/otp/prepare`, {
       factorValue: phoneNumber,
@@ -236,7 +236,7 @@ export default class OneZeroScraper extends BaseScraper<ScraperSpecificCredentia
     const movements = [];
 
     while (!movements.length || new Date(movements[0].movementTimestamp) >= startDate) {
-      debug(`Fetching transactions for account ${portfolio.portfolioNum}...`);
+      debug('Fetching transactions for one portfolio (batch)');
       const {
         movements: { movements: newMovements, pagination },
       }: { movements: { movements: Movement[]; pagination: QueryPagination } } = await fetchGraphql(
@@ -283,7 +283,7 @@ export default class OneZeroScraper extends BaseScraper<ScraperSpecificCredentia
           type: hasInstallments ? TransactionTypes.Installments : TransactionTypes.Normal,
         };
 
-        if (this.options?.includeRawTransaction) {
+        if (this.shouldIncludeRawTransaction()) {
           result.rawTransaction = getRawTransaction(movement);
         }
 

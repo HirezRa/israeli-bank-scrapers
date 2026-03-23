@@ -8,6 +8,7 @@ import { waitUntil } from '../helpers/waiting';
 import { type Transaction, TransactionStatuses, TransactionTypes, type TransactionsAccount } from '../transactions';
 import { BaseScraperWithBrowser, LoginResults, type PossibleLoginResults } from './base-scraper-with-browser';
 import { type ScraperOptions } from './interface';
+import { isIncludeRawTransactionEnabled } from '../helpers/sensitive-options';
 import { getRawTransaction } from '../helpers/transactions';
 
 const debug = getDebug('hapoalim');
@@ -107,7 +108,7 @@ function convertTransactions(txns: ScrapedTransaction[], options?: ScraperOption
       memo,
     };
 
-    if (options?.includeRawTransaction) {
+    if (isIncludeRawTransactionEnabled(options)) {
       result.rawTransaction = getRawTransaction(txn);
     }
 
@@ -224,8 +225,9 @@ async function fetchAccountData(page: Page, baseUrl: string, options: ScraperOpt
 
   const accounts: TransactionsAccount[] = [];
 
-  for (const account of openAccountsInfo) {
-    debug('getting information for account %s', account.accountNumber);
+  for (let i = 0; i < openAccountsInfo.length; i += 1) {
+    const account = openAccountsInfo[i];
+    debug('getting information for open account %d of %d', i + 1, openAccountsInfo.length);
     const accountNumber = `${account.bankNumber}-${account.branchNumber}-${account.accountNumber}`;
 
     const balance = await getAccountBalance(apiSiteUrl, page, accountNumber);

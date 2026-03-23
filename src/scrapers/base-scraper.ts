@@ -1,6 +1,8 @@
 import { EventEmitter } from 'events';
 import moment from 'moment-timezone';
 import { type CompanyTypes, ScraperProgressTypes } from '../definitions';
+import { publicErrorMessageFromUnknown } from '../helpers/safe-error';
+import { isIncludeRawTransactionEnabled, resolveScraperOptionsForRuntime } from '../helpers/sensitive-options';
 import { TimeoutError } from '../helpers/waiting';
 import { createGenericError, createTimeoutError } from './errors';
 import {
@@ -18,7 +20,22 @@ const SCRAPE_PROGRESS = 'SCRAPE_PROGRESS';
 export class BaseScraper<TCredentials extends ScraperCredentials> implements Scraper<TCredentials> {
   private eventEmitter = new EventEmitter();
 
-  constructor(public options: ScraperOptions) {}
+  public readonly options: ScraperOptions;
+
+  /**
+   * All concrete scrapers flow through here, including direct `new SomeScraper(opts)`.
+   * Options are normalized for restricted runtimes (production / CI), matching `createScraper()` behavior.
+   */
+  constructor(options: ScraperOptions) {
+    this.options = resolveScraperOptionsForRuntime(options);
+  }
+
+  /**
+   * Raw transaction payloads are disabled in production/CI unless ALLOW_SENSITIVE_DEBUG is set.
+   */
+  protected shouldIncludeRawTransaction(): boolean {
+    return isIncludeRawTransactionEnabled(this.options);
+  }
 
   // eslint-disable-next-line  @typescript-eslint/require-await
   async initialize() {
@@ -35,7 +52,9 @@ export class BaseScraper<TCredentials extends ScraperCredentials> implements Scr
       loginResult = await this.login(credentials);
     } catch (e) {
       loginResult =
-        e instanceof TimeoutError ? createTimeoutError((e as Error).message) : createGenericError((e as Error).message);
+        e instanceof TimeoutError
+          ? createTimeoutError(publicErrorMessageFromUnknown(e))
+          : createGenericError(publicErrorMessageFromUnknown(e));
     }
 
     let scrapeResult;
@@ -45,8 +64,8 @@ export class BaseScraper<TCredentials extends ScraperCredentials> implements Scr
       } catch (e) {
         scrapeResult =
           e instanceof TimeoutError
-            ? createTimeoutError((e as Error).message)
-            : createGenericError((e as Error).message);
+            ? createTimeoutError(publicErrorMessageFromUnknown(e))
+            : createGenericError(publicErrorMessageFromUnknown(e));
       }
     } else {
       scrapeResult = loginResult;
@@ -56,7 +75,7 @@ export class BaseScraper<TCredentials extends ScraperCredentials> implements Scr
       const success = scrapeResult && scrapeResult.success === true;
       await this.terminate(success);
     } catch (e) {
-      scrapeResult = createGenericError((e as Error).message);
+      scrapeResult = createGenericError(publicErrorMessageFromUnknown(e));
     }
     this.emitProgress(ScraperProgressTypes.EndScraping);
 

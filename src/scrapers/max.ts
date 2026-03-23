@@ -6,6 +6,7 @@ import { getDebug } from '../helpers/debug';
 import { clickButton, elementPresentOnPage, waitUntilElementFound } from '../helpers/elements-interactions';
 import { fetchGetWithinPage } from '../helpers/fetch';
 import { waitForRedirect } from '../helpers/navigation';
+import { isIncludeRawTransactionEnabled } from '../helpers/sensitive-options';
 import {
   filterOldTransactions,
   fixInstallments,
@@ -233,7 +234,7 @@ function mapTransaction(rawTransaction: ScrapedTransaction, options?: ScraperOpt
     status,
   };
 
-  if (options?.includeRawTransaction) {
+  if (isIncludeRawTransactionEnabled(options)) {
     result.rawTransaction = getRawTransaction(rawTransaction);
   }
 
