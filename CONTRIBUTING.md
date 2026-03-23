@@ -11,9 +11,13 @@ Any kind of help is welcome, even if you just discover an issue and don't have t
 While there's no specific template for creating a new issue, please take the time to create a clear description so that it is easy to understand the problem.
 
 ## Testing the scrapers
-In order to run tests you need first to create test configuration file `./src/tests/.tests-config.js` from template `./src/tests/.tests-config.tpl.js`. This file will be used by `jest` testing framework. 
+In order to run **live institution** tests you should create test configuration file `./src/tests/.tests-config.js` from template `./src/tests/.tests-config.tpl.js`. If that file is missing, Jest falls back to `./src/tests/tests-config.defaults.js` (no real API calls; `companyAPI.enabled: false`) so unit tests and CI can run without credentials. 
 
 > IMPORTANT: Under `src/tests` folder exists `.gitignore` file that ignore the test configuration file thus this file will not be commited to github. Still when you create new PRs make sure that you didn't explicitly added it to the PR.
+
+> **Secrets:** Never commit real credentials, `TESTS_CONFIG` JSON with live passwords, OTP secrets, or scraped transaction exports. In CI, prefer mock-based tests; integration tests with real banks belong in private runners. See [SECURITY.md](./SECURITY.md) for runtime hardening (`NODE_ENV`, `CI`, `ALLOW_SENSITIVE_DEBUG`).
+
+> **Maintainers:** New code must not log full URLs with query strings, raw HTTP bodies, or institute `error.message` blobs—use `sanitizeUrlForLogs`, `redactDeep`, and `sanitizeExternalServiceMessage`. See SECURITY.md “Maintainer guardrails”.
 
 This library supports both testing against credit card companies / banks api and also against mock data. Until we will have a good coverage of scrapers test with mock data, the default configuration is set to execute real companies api tests.
 
