@@ -269,7 +269,7 @@ result = {
 # Getting deployed version of latest changes in master
 Upstream deploys [`israeli-bank-scrapers`](https://www.npmjs.com/package/israeli-bank-scrapers) to npm when changes land on its main branch, on its own release cadence.
 
-**This fork** publishes separately as [@hirez10/israeli-bank-scrapers](https://www.npmjs.com/package/@hirez10/israeli-bank-scrapers). The latest version published from this repository is **1.0.5** (see npm for up-to-date metadata).
+**This fork** publishes separately as [@hirez10/israeli-bank-scrapers](https://www.npmjs.com/package/@hirez10/israeli-bank-scrapers). The latest version published from this repository is **1.0.6** (see npm for up-to-date metadata).
 
 # `Israeli-bank-scrapers-core` library
 
