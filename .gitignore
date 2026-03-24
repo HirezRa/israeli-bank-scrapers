@@ -54,8 +54,10 @@ typings/
 # Yarn Integrity file
 .yarn-integrity
 
-# dotenv environment variables file
+# Environment files (do not commit secrets; .env.example is allowed)
 .env
+.env.*
+!.env.example
 
 # NPM package related
 lib/

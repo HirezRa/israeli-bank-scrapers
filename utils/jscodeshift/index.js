@@ -1,5 +1,3 @@
-const { resolve } = require("path");
-const { spawnSync } = require("child_process");
 const { run: jscodeshift } = require("jscodeshift/src/Runner");
 const path = require("node:path");
 

@@ -10,6 +10,9 @@ Any kind of help is welcome, even if you just discover an issue and don't have t
 ## Filing issues
 While there's no specific template for creating a new issue, please take the time to create a clear description so that it is easy to understand the problem.
 
+## Maintenance scripts (destructive)
+The npm scripts `prepare:core`, `prepare:default`, and `reset` run **`git reset --hard`** (and related steps). They are intended for **local maintenance / release prep** only and will **discard uncommitted work** in the repo. Do not run them on a dirty tree unless you intend to lose those changes.
+
 ## Testing the scrapers
 In order to run tests you need first to create test configuration file `./src/tests/.tests-config.js` from template `./src/tests/.tests-config.tpl.js`. This file will be used by `jest` testing framework. 
 
