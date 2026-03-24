@@ -1,6 +1,6 @@
 {
   "name": "@hirez10/israeli-bank-scrapers",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "private": false,
   "description": "Hardened fork: scrapers for Israeli banks and credit cards (security/privacy-oriented maintenance; not the upstream unscoped package).",
   "engines": {
