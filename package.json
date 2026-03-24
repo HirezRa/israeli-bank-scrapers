@@ -1,14 +1,14 @@
 {
-  "name": "israeli-bank-scrapers",
+  "name": "@hirezra/israeli-bank-scrapers",
   "version": "1.0.4",
-  "private": true,
-  "description": "Provide scrapers for all major Israeli banks and credit card companies",
+  "private": false,
+  "description": "Hardened fork: scrapers for Israeli banks and credit cards (security/privacy-oriented maintenance; not the upstream unscoped package).",
   "engines": {
     "node": ">= 22.12.0"
   },
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "registry": "https://registry.npmjs.org/"
   },
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -32,19 +32,21 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/eshaham/israeli-bank-scrapers.git"
+    "url": "git+https://github.com/HirezRa/israeli-bank-scrapers.git"
   },
   "keywords": [
     "israel",
     "israeli bank",
-    "israeli bank scraper"
+    "israeli bank scraper",
+    "fork",
+    "security"
   ],
   "author": "Elad Shaham",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/eshaham/israeli-bank-scrapers/issues"
+    "url": "https://github.com/HirezRa/israeli-bank-scrapers/issues"
   },
-  "homepage": "https://github.com/eshaham/israeli-bank-scrapers#readme",
+  "homepage": "https://github.com/HirezRa/israeli-bank-scrapers#readme",
   "devDependencies": {
     "@babel/cli": "^7.4.4",
     "@babel/core": "^7.4.5",
