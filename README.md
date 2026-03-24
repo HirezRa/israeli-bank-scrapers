@@ -7,6 +7,26 @@
 [![npm version](https://badge.fury.io/js/israeli-bank-scrapers.svg)](https://badge.fury.io/js/israeli-bank-scrapers)
 [![Discord](https://img.shields.io/discord/924617301209260103?logo=discord)](https://discord.gg/2UvGM7aX4p)
 
+## About this repository (hardened fork)
+
+This repository is a **hardened fork** of [eshaham/israeli-bank-scrapers](https://github.com/eshaham/israeli-bank-scrapers) (upstream). It is maintained separately and adds security- and privacy-oriented hardening; it does **not** replace the upstream unscoped [`israeli-bank-scrapers`](https://www.npmjs.com/package/israeli-bank-scrapers) package.
+
+**Install this fork from npm** ([package page](https://www.npmjs.com/package/@hirez10/israeli-bank-scrapers)):
+
+```sh
+npm install @hirez10/israeli-bank-scrapers
+```
+
+### Fork status — what’s different here
+
+At a high level, this fork includes:
+
+- Safer logging and error handling (fewer sensitive details in logs by default)
+- Stricter defaults for debug/runtime controls and sensitive options
+- A tighter published package surface and build output, plus dependency hygiene and pre-publish audit review where applicable
+
+This is **not** a claim that the code is “fully secure” or that all issues are eliminated. Treat financial integrations with care. For security-related notes and maintenance guidance, see **[SECURITY.md](./SECURITY.md)**.
+
 > Important!
 > 
 > The scrapers are set to use timezone `Asia/Jerusalem` to avoid conflicts in case you're running the scrapers outside Israel.
@@ -32,18 +52,34 @@ Currently only the following banks are supported:
 - OneZero (Experimental) (thanks [@orzarchi](https://github.com/orzarchi))
 - Behatsdaa - [בהצדעה](behatsdaa.org.il) (thanks [@daniel-hauser](https://github.com/daniel-hauser))
 
+# Security & privacy
+
+This project handles **real financial credentials and data**. See **[SECURITY.md](./SECURITY.md)** for security-related notes, operational defaults, and maintenance guidance. That document covers:
+
+- production / CI defaults (`NODE_ENV`, `CI`, `ALLOW_SENSITIVE_DEBUG`);
+- that **`BaseScraper` enforces the same defaults for `createScraper()` and for direct `new SomeScraper(opts)`**;
+- safe logging, URL sanitization (`sanitizeUrlForLogs`), and error handling;
+- how `includeRawTransaction`, failure screenshots, and `verbose` / `showBrowser` are restricted in restricted runtimes;
+- testing without leaking secrets.
+
+When pasting code samples or opening issues/PRs, **never** include real passwords, OTPs, tokens, or unredacted bank responses.
+
 # Prerequisites
 To use this you will need to have [Node.js](https://nodejs.org) >= 22.12.0 installed.
 
 # Getting started
-To use these scrapers you'll need to install the package from npm:
+To use these scrapers from **this fork**, install the published scoped package from npm:
+
 ```sh
-npm install israeli-bank-scrapers --save
+npm install @hirez10/israeli-bank-scrapers --save
 ```
-Then you can simply import and use it in your node module:
+
+Package on npm: [https://www.npmjs.com/package/@hirez10/israeli-bank-scrapers](https://www.npmjs.com/package/@hirez10/israeli-bank-scrapers). The upstream project continues to publish [`israeli-bank-scrapers`](https://www.npmjs.com/package/israeli-bank-scrapers) separately; the two package names refer to different release lines.
+
+Then you can import and use it in your Node module (use the fork’s package name in imports):
 
 ```node
-import { CompanyTypes, createScraper } from 'israeli-bank-scrapers';
+import { CompanyTypes, createScraper } from '@hirez10/israeli-bank-scrapers';
 
 (async function() {
   try {
@@ -52,13 +88,14 @@ import { CompanyTypes, createScraper } from 'israeli-bank-scrapers';
       companyId: CompanyTypes.leumi, 
       startDate: new Date('2020-05-01'),
       combineInstallments: false,
-      showBrowser: true 
+      showBrowser: false
     };
 
     // read documentation below for information about credentials
+    // Use mock credentials only — never real banking passwords in source control or logs.
     const credentials = {
-      username: 'vr29485',
-      password: 'sometingsomething'
+      username: 'demo_user',
+      password: 'demo_password'
     };
 
     const scraper = createScraper(options);
@@ -77,6 +114,8 @@ import { CompanyTypes, createScraper } from 'israeli-bank-scrapers';
   }
 })();
 ```
+
+**Imports in examples below:** Many snippets still use the upstream module name `israeli-bank-scrapers` in `import` lines, matching the original README. When using **this fork**, replace that with `@hirez10/israeli-bank-scrapers` in every import.
 
 Check the options declaration [here](./src/scrapers/interface.ts#L29) for available options.
 
@@ -226,7 +265,9 @@ result = {
 ```
 
 # Getting deployed version of latest changes in master
-This library is deployed automatically to NPM with any change merged into the master branch. 
+Upstream deploys [`israeli-bank-scrapers`](https://www.npmjs.com/package/israeli-bank-scrapers) to npm when changes land on its main branch, on its own release cadence.
+
+**This fork** publishes separately as [@hirez10/israeli-bank-scrapers](https://www.npmjs.com/package/@hirez10/israeli-bank-scrapers). The latest version published from this repository is **1.0.5** (see npm for up-to-date metadata).
 
 # `Israeli-bank-scrapers-core` library
 
