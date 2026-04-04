@@ -5,6 +5,7 @@ import { ScraperProgressTypes } from '../definitions';
 import getAllMonthMoments from '../helpers/dates';
 import { getDebug } from '../helpers/debug';
 import { fetchGetWithinPage, fetchPostWithinPage } from '../helpers/fetch';
+import { chunk } from '../helpers/arrays';
 import { filterOldTransactions, fixInstallments, getRawTransaction } from '../helpers/transactions';
 import { runSerial, sleep } from '../helpers/waiting';
 import {
@@ -38,17 +39,6 @@ type CompanyServiceOptions = {
 };
 
 type ScrapedAccountsWithIndex = Record<string, TransactionsAccount & { index: number }>;
-
-function chunk<T>(array: T[], size: number): T[][] {
-  if (size <= 0) {
-    throw new Error(`chunk size must be positive, got ${size}`);
-  }
-  const chunks: T[][] = [];
-  for (let i = 0; i < array.length; i += size) {
-    chunks.push(array.slice(i, i + size));
-  }
-  return chunks;
-}
 
 interface ScrapedTransaction {
   dealSumType: string;
