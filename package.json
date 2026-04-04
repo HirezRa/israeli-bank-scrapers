@@ -55,7 +55,6 @@
     "@types/jest": "^29.5.12",
     "@types/lodash": "^4.14.149",
     "@types/source-map-support": "^0.5.1",
-    "@types/uuid": "^9.0.1",
     "cross-env": "^6.0.3",
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
@@ -81,8 +80,7 @@
     "moment": "^2.22.2",
     "moment-timezone": "^0.5.37",
     "puppeteer": "^24.40.0",
-    "utility-types": "^3.11.0",
-    "uuid": "^9.0.1"
+    "utility-types": "^3.11.0"
   },
   "files": [
     "lib/**/*"
