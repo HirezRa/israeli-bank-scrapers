@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import moment, { type Moment } from 'moment';
 import { TransactionTypes, type Transaction } from '../transactions';
 
@@ -36,7 +35,7 @@ export function fixInstallments(txns: Transaction[]): Transaction[] {
 }
 
 export function sortTransactionsByDate(txns: Transaction[]) {
-  return _.sortBy(txns, ['date']);
+  return [...txns].sort((a, b) => a.date.localeCompare(b.date));
 }
 
 export function filterOldTransactions(txns: Transaction[], startMoment: Moment, combineInstallments: boolean) {

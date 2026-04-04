@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import moment, { type Moment } from 'moment';
 import { type Page } from 'puppeteer';
 import { ALT_SHEKEL_CURRENCY, SHEKEL_CURRENCY, SHEKEL_CURRENCY_KEYWORD } from '../constants';
@@ -39,6 +38,14 @@ type CompanyServiceOptions = {
 };
 
 type ScrapedAccountsWithIndex = Record<string, TransactionsAccount & { index: number }>;
+
+function chunk<T>(array: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < array.length; i += size) {
+    chunks.push(array.slice(i, i + size));
+  }
+  return chunks;
+}
 
 interface ScrapedTransaction {
   dealSumType: string;
@@ -122,7 +129,7 @@ async function fetchAccounts(page: Page, servicesUrl: string, monthMoment: Momen
   const dataUrl = getAccountsUrl(servicesUrl, monthMoment);
   debug(`fetching accounts from ${dataUrl}`);
   const dataResult = await fetchGetWithinPage<ScrapedAccountsWithinPageResponse>(page, dataUrl);
-  if (dataResult && _.get(dataResult, 'Header.Status') === '1' && dataResult.DashboardMonthBean) {
+  if (dataResult && dataResult.Header?.Status === '1' && dataResult.DashboardMonthBean) {
     const { cardsCharges } = dataResult.DashboardMonthBean;
     if (cardsCharges) {
       return cardsCharges.map(cardCharge => {
@@ -228,13 +235,11 @@ async function fetchTransactions(
   await sleep(RATE_LIMIT.SLEEP_BETWEEN);
   debug(`fetching transactions from ${dataUrl} for month ${monthMoment.format('YYYY-MM')}`);
   const dataResult = await fetchGetWithinPage<ScrapedTransactionData>(page, dataUrl);
-  if (dataResult && _.get(dataResult, 'Header.Status') === '1' && dataResult.CardsTransactionsListBean) {
+  if (dataResult && dataResult.Header?.Status === '1' && dataResult.CardsTransactionsListBean) {
     const accountTxns: ScrapedAccountsWithIndex = {};
     accounts.forEach(account => {
-      const txnGroups: ScrapedCurrentCardTransactions[] | undefined = _.get(
-        dataResult,
-        `CardsTransactionsListBean.Index${account.index}.CurrentCardTransactions`,
-      );
+      const txnGroups: ScrapedCurrentCardTransactions[] | undefined =
+        dataResult.CardsTransactionsListBean?.[`Index${account.index}`]?.CurrentCardTransactions;
       if (txnGroups) {
         let allTxns: Transaction[] = [];
         txnGroups.forEach(txnGroup => {
@@ -286,7 +291,7 @@ async function getExtraScrapTransaction(
     return transaction;
   }
 
-  const rawCategory = _.get(data, 'PirteyIska_204Bean.sector') ?? '';
+  const rawCategory = data.PirteyIska_204Bean?.sector ?? '';
   return {
     ...transaction,
     category: rawCategory.trim(),
@@ -307,7 +312,7 @@ async function getExtraScrapAccount(
       month.format('YYYY-MM'),
     );
     const txns: Transaction[] = [];
-    for (const txnsChunk of _.chunk(account.txns, RATE_LIMIT.TRANSACTIONS_BATCH_SIZE)) {
+    for (const txnsChunk of chunk(account.txns, RATE_LIMIT.TRANSACTIONS_BATCH_SIZE)) {
       debug(`processing chunk of ${txnsChunk.length} transactions for account ${account.accountNumber}`);
       const updatedTxns = await Promise.all(
         txnsChunk.map(t => getExtraScrapTransaction(page, options, month, account.index, t)),
