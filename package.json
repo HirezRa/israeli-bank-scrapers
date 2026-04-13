@@ -1,5 +1,5 @@
 {
-  "name": "israeli-bank-scrapers",
+  "name": "@hirez10/israeli-bank-scrapers",
   "version": "1.0.7",
   "private": true,
   "upstreamSync": {
