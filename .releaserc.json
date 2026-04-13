@@ -1,4 +1,5 @@
 {
+  "repositoryUrl": "https://github.com/HirezRa/israeli-bank-scrapers.git",
   "branches": ["master", "next"],
   "tagFormat": "hirez-v${version}",
   "plugins": [
