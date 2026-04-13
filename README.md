@@ -27,6 +27,10 @@ At a high level, this fork includes:
 
 This is **not** a claim that the code is “fully secure” or that all issues are eliminated. Treat financial integrations with care. For security-related notes and maintenance guidance, see **[SECURITY.md](./SECURITY.md)**.
 
+### Upstream sync
+
+This fork tracks **[eshaham/israeli-bank-scrapers](https://github.com/eshaham/israeli-bank-scrapers)**. Last merged upstream release: **[v6.7.3](https://github.com/eshaham/israeli-bank-scrapers/releases/tag/v6.7.3)** ([`59ecc99e44188fc7b5325040560be46e3a034696`](https://github.com/eshaham/israeli-bank-scrapers/commit/59ecc99e44188fc7b5325040560be46e3a034696)). The same tag and commit are recorded under `upstreamSync` in [`package.json`](./package.json) for automation and release notes.
+
 > Important!
 > 
 > The scrapers are set to use timezone `Asia/Jerusalem` to avoid conflicts in case you're running the scrapers outside Israel.
@@ -65,7 +69,7 @@ This project handles **real financial credentials and data**. See **[SECURITY.md
 When pasting code samples or opening issues/PRs, **never** include real passwords, OTPs, tokens, or unredacted bank responses.
 
 # Prerequisites
-To use this you will need to have [Node.js](https://nodejs.org) >= 22.12.0 installed.
+To use this you will need to have [Node.js](https://nodejs.org) >= 22.13.0 installed.
 
 # Getting started
 To use these scrapers from **this fork**, install the published scoped package from npm:
@@ -267,7 +271,7 @@ result = {
 # Getting deployed version of latest changes in master
 Upstream deploys [`israeli-bank-scrapers`](https://www.npmjs.com/package/israeli-bank-scrapers) to npm when changes land on its main branch, on its own release cadence.
 
-**This fork** publishes separately as [@hirez10/israeli-bank-scrapers](https://www.npmjs.com/package/@hirez10/israeli-bank-scrapers). The latest version published from this repository is **1.0.5** (see npm for up-to-date metadata).
+**This fork** publishes separately as [@hirez10/israeli-bank-scrapers](https://www.npmjs.com/package/@hirez10/israeli-bank-scrapers). The version in this repo’s `package.json` is the source of truth for the next publish (currently **1.0.6**; confirm on [npm](https://www.npmjs.com/package/@hirez10/israeli-bank-scrapers) after release).
 
 # `Israeli-bank-scrapers-core` library
 

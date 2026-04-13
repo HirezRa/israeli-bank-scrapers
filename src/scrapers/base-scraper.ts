@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events';
 import moment from 'moment-timezone';
 import { type CompanyTypes, ScraperProgressTypes } from '../definitions';
+import { normalizeScraperOptionsForRuntime } from '../helpers/security-runtime';
 import { TimeoutError } from '../helpers/waiting';
 import { createGenericError, createTimeoutError } from './errors';
 import {
@@ -18,7 +19,11 @@ const SCRAPE_PROGRESS = 'SCRAPE_PROGRESS';
 export class BaseScraper<TCredentials extends ScraperCredentials> implements Scraper<TCredentials> {
   private eventEmitter = new EventEmitter();
 
-  constructor(public options: ScraperOptions) {}
+  public options: ScraperOptions;
+
+  constructor(options: ScraperOptions) {
+    this.options = normalizeScraperOptionsForRuntime(options);
+  }
 
   // eslint-disable-next-line  @typescript-eslint/require-await
   async initialize() {
