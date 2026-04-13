@@ -1,4 +1,5 @@
 export { CompanyTypes, SCRAPERS } from './definitions';
+export { isRestrictedSensitiveRuntime, sanitizeUrlForLogs } from './helpers/security-runtime';
 export { default as createScraper } from './scrapers/factory';
 
 // Note: the typo ScaperScrapingResult & ScraperLoginResult (sic) are exported here for backward compatibility

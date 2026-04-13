@@ -17,6 +17,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # semantic-release needs full history and tags to compute the next version from the last release tag.
+          fetch-depth: 0
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -63,7 +66,13 @@ jobs:
           node utils/pre-publish.js --version ${{ steps.semantic.outputs.new_release_version }}
       - name: Publish to NPM
         if: steps.semantic.outputs.new_release_published == 'true'
-        run: npm publish --access public --ignore-scripts --provenance
+        run: |
+          if [ -n "${NPM_TOKEN:-}" ]; then
+            export NODE_AUTH_TOKEN="${NPM_TOKEN}"
+          fi
+          npm publish --access public --ignore-scripts --provenance
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Prepare release of core to NPM
         if: steps.semantic.outputs.new_release_published == 'true'
         run: |
@@ -71,4 +80,10 @@ jobs:
           node utils/pre-publish.js --version ${{ steps.semantic.outputs.new_release_version }}
       - name: Publish to NPM
         if: steps.semantic.outputs.new_release_published == 'true'
-        run: npm publish --access public --ignore-scripts --provenance
+        run: |
+          if [ -n "${NPM_TOKEN:-}" ]; then
+            export NODE_AUTH_TOKEN="${NPM_TOKEN}"
+          fi
+          npm publish --access public --ignore-scripts --provenance
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

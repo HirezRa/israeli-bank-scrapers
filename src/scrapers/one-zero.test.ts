@@ -31,7 +31,7 @@ describe('OneZero scraper', () => {
       const scraper = new OneZeroScraper(options);
 
       const result = await scraper.scrape({
-        email: 'e10s12@gmail.com',
+        email: 'invalid-user@example.com',
         password: '3f3ss3d',
         otpLongTermToken: '11111',
       });
