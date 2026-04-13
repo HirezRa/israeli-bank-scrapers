@@ -272,7 +272,7 @@ result = {
 Upstream deploys [`israeli-bank-scrapers`](https://www.npmjs.com/package/israeli-bank-scrapers) to npm when changes land on its main branch, on its own release cadence.
 
 <<<<<<< HEAD
-**This fork** publishes separately as [@hirez10/israeli-bank-scrapers](https://www.npmjs.com/package/@hirez10/israeli-bank-scrapers). The version in this repo’s `package.json` is the source of truth for the next publish (currently **1.0.6**; confirm on [npm](https://www.npmjs.com/package/@hirez10/israeli-bank-scrapers) after release).
+**This fork** publishes separately as [@hirez10/israeli-bank-scrapers](https://www.npmjs.com/package/@hirez10/israeli-bank-scrapers). The version in this repo’s `package.json` is the source of truth for the next publish (currently **1.0.7**; confirm on [npm](https://www.npmjs.com/package/@hirez10/israeli-bank-scrapers) after release).
 =======
 **This fork** publishes separately as [@hirez10/israeli-bank-scrapers](https://www.npmjs.com/package/@hirez10/israeli-bank-scrapers). The latest version published from this repository is **1.0.5** (see npm for up-to-date metadata).
 >>>>>>> origin/master
