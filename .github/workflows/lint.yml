@@ -10,9 +10,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
       - name: Run npm install
         run: npm install
 
       - name: Run lint
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
         run: npm run lint
 
