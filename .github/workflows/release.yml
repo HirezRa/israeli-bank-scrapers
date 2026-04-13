@@ -20,6 +20,12 @@ jobs:
         with:
           # semantic-release needs full history and tags to compute the next version from the last release tag.
           fetch-depth: 0
+      # Default checkout is detached HEAD; semantic-release refuses to publish if local branch != origin (see SR error:
+      # "The local branch master is behind the remote one").
+      - name: Align local release branch with origin
+        run: |
+          git fetch origin "${{ github.ref_name }}"
+          git checkout -B "${{ github.ref_name }}" "origin/${{ github.ref_name }}"
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
