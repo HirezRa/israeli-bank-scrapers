@@ -29,7 +29,7 @@ This is **not** a claim that the code is “fully secure” or that all issues a
 
 ### Upstream sync
 
-This fork tracks **[eshaham/israeli-bank-scrapers](https://github.com/eshaham/israeli-bank-scrapers)**. Last merged upstream release: **[v6.7.3](https://github.com/eshaham/israeli-bank-scrapers/releases/tag/v6.7.3)** ([`59ecc99e44188fc7b5325040560be46e3a034696`](https://github.com/eshaham/israeli-bank-scrapers/commit/59ecc99e44188fc7b5325040560be46e3a034696)). The same tag and commit are recorded under `upstreamSync` in [`package.json`](./package.json) for automation and release notes.
+This fork tracks **[eshaham/israeli-bank-scrapers](https://github.com/eshaham/israeli-bank-scrapers)**. Last merged upstream release: **[v6.7.4](https://github.com/eshaham/israeli-bank-scrapers/releases/tag/v6.7.4)** ([`847f5f74e3923c3993b802c7a25fe12b30c1d18c`](https://github.com/eshaham/israeli-bank-scrapers/commit/847f5f74e3923c3993b802c7a25fe12b30c1d18c)). The same tag and commit are recorded under `upstreamSync` in [`package.json`](./package.json) for automation and release notes.
 
 > Important!
 > 
@@ -271,11 +271,7 @@ result = {
 # Getting deployed version of latest changes in master
 Upstream deploys [`israeli-bank-scrapers`](https://www.npmjs.com/package/israeli-bank-scrapers) to npm when changes land on its main branch, on its own release cadence.
 
-<<<<<<< HEAD
-**This fork** publishes separately as [@hirez10/israeli-bank-scrapers](https://www.npmjs.com/package/@hirez10/israeli-bank-scrapers). The version in this repo’s `package.json` is the source of truth for the next publish (currently **1.0.7**; confirm on [npm](https://www.npmjs.com/package/@hirez10/israeli-bank-scrapers) after release).
-=======
-**This fork** publishes separately as [@hirez10/israeli-bank-scrapers](https://www.npmjs.com/package/@hirez10/israeli-bank-scrapers). The latest version published from this repository is **1.0.5** (see npm for up-to-date metadata).
->>>>>>> origin/master
+**This fork** publishes separately as [@hirez10/israeli-bank-scrapers](https://www.npmjs.com/package/@hirez10/israeli-bank-scrapers). The version in this repo’s [`package.json`](./package.json) is the source of truth for the next publish; confirm the latest published release on [npm](https://www.npmjs.com/package/@hirez10/israeli-bank-scrapers).
 
 # `Israeli-bank-scrapers-core` library
 
