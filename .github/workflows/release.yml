@@ -1,42 +1,50 @@
 name: Release
+
 on:
   push:
     branches:
       - master
       - next
+
 jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
     environment: npm-publish
+
     permissions:
-      id-token: write
       contents: write
       issues: write
       pull-requests: write
+
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      NPM_CONFIG_PROVENANCE: false
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          # semantic-release needs full history and tags to compute the next version from the last release tag.
           fetch-depth: 0
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           registry-url: https://registry.npmjs.org/
-      - name: Upgrade npm for OIDC support
-        run: npm install -g npm@latest
-      - name: Verify npm version
-        run: |
-          echo "Node version: $(node -v)"
-          echo "npm version: $(npm -v)"
-          npm config list
+
+      - name: Verify npm authentication
+        run: npm whoami
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: prepare default version
         run: npm run prepare:default
+
       - name: Release to Github
         uses: cycjimmy/semantic-release-action@v4
-        id: semantic   # Need an `id` for output variables
+        id: semantic
         with:
           semantic_version: 16.0.2
           branches: |
@@ -45,45 +53,28 @@ jobs:
               'master',
               'next',
               'next-major',
-              {
-                name: 'hotfix',
-                prerelease: true
-              },
-              {
-                name: 'beta',
-                prerelease: true
-              },
-              {
-                name: 'alpha',
-                prerelease: true
-              }
+              { "name": "hotfix", "prerelease": true },
+              { "name": "beta", "prerelease": true },
+              { "name": "alpha", "prerelease": true }
             ]
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Prepare release of default to NPM
         if: steps.semantic.outputs.new_release_published == 'true'
         run: |
           node utils/pre-publish.js --version ${{ steps.semantic.outputs.new_release_version }}
-      - name: Publish to NPM
+
+      - name: Publish default package to npm
         if: steps.semantic.outputs.new_release_published == 'true'
-        run: |
-          if [ -n "${NPM_TOKEN:-}" ]; then
-            export NODE_AUTH_TOKEN="${NPM_TOKEN}"
-          fi
-          npm publish --access public --ignore-scripts --provenance
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public --ignore-scripts
+
       - name: Prepare release of core to NPM
         if: steps.semantic.outputs.new_release_published == 'true'
         run: |
           npm run prepare:core
           node utils/pre-publish.js --version ${{ steps.semantic.outputs.new_release_version }}
-      - name: Publish to NPM
+
+      - name: Publish core package to npm
         if: steps.semantic.outputs.new_release_published == 'true'
-        run: |
-          if [ -n "${NPM_TOKEN:-}" ]; then
-            export NODE_AUTH_TOKEN="${NPM_TOKEN}"
-          fi
-          npm publish --access public --ignore-scripts --provenance
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public --ignore-scripts
