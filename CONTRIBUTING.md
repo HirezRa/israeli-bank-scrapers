@@ -168,3 +168,33 @@ function getLoginOptions(credentials) {
 
 ### Overriding fetchData()
 You can override this async function however way you want, as long as your return results as `ScaperScrapingResult` (checkout declaration [here](./src/scrapers/base-scraper.ts#L151)).
+
+## Upstream sync (maintainers)
+
+This fork tracks **[eshaham/israeli-bank-scrapers](https://github.com/eshaham/israeli-bank-scrapers)**. Keep `upstreamSync` in `package.json` and the upstream tag/commit lines in `README.md` and `SECURITY.md` in sync with the real merge.
+
+### Prerequisites
+
+- Git remote `upstream` pointing at `https://github.com/eshaham/israeli-bank-scrapers.git` (`git remote add upstream …` if missing).
+- Optional: `GH_TOKEN` or `GITHUB_TOKEN` for higher GitHub API rate limits when running the helper script.
+
+### Workflow when upstream ships a new release
+
+1. **Check** — `npm run sync:upstream` (or `node utils/sync-upstream.js status`). Exit code `1` means the fork's `upstreamSync.tag` is behind GitHub's latest release.
+2. **Merge** — `npm run sync:upstream:merge` (runs `git fetch upstream` and `git merge upstream/master`). Resolve conflicts, run `npm ci`, `npm test`, and `npm run build` as needed.
+3. **Refresh metadata** — `npm run sync:upstream:metadata` updates `package.json` (`upstreamSync` + `description` upstream base), and replaces the previous upstream tag/commit in `README.md` and `SECURITY.md`. Review the diff; update the **Sync status** paragraph in `README.md` if you change the wording or date.
+4. **GitHub About** — After a version bump, align the repository description with `package.json` `description`, e.g.  
+   `gh repo edit HirezRa/israeli-bank-scrapers --description "…"`  
+   (use your fork's `owner/name` if different; `gh repo edit` without a repo may target the wrong remote).
+
+## npm publish recovery (GitHub ahead of npm)
+
+semantic-release may create a GitHub release and tag **`hirez-v1.x.x`** while **npm** still shows an older version if `npm publish` failed (commonly `E404` on `@hirez10/israeli-bank-scrapers`).
+
+1. **Fix CI auth** — In the repo environment **`npm-publish`**, set **`NPM_TOKEN`** to a granular access token with **publish** rights for the `@hirez10` scope (or org). The Release workflow runs **`npm whoami`** first; if that step fails, npm will never update.
+2. **Confirm workflow** — `.github/workflows/release.yml` publishes with **`NPM_CONFIG_PROVENANCE=false`** so token-based publishes are not mixed with automatic provenance in a way that triggers 404 on scoped packages.
+3. **Catch up npm** after fixing the secret:
+   - **Option A:** Push a small commit to `master` that triggers a new release (e.g. `fix: republish npm after token fix`), or merge a no-op PR — semantic-release will bump the version and publish.
+   - **Option B:** If npm **never** received that version (the CI publish failed), check out the matching tag (e.g. `git checkout hirez-v1.0.9`), run `npm ci && npm run build`, then `node utils/pre-publish.js --version 1.0.9` and `npm run publish:local` as a maintainer with publish rights. If the version **already** exists on npm, use **Option A** or bump semver instead (npm does not allow overwriting an existing version).
+
+Always compare [GitHub Releases](https://github.com/HirezRa/israeli-bank-scrapers/releases) with the [npm package page](https://www.npmjs.com/package/@hirez10/israeli-bank-scrapers).

@@ -40,7 +40,11 @@ When **either** of the following is true, the fork treats the process as **restr
 
 - Run `npm pack --dry-run` before `npm publish` and confirm the tarball only contains intended files (`lib/**/*` and this `SECURITY.md` per `package.json` `files`). The `postbuild` step runs `utils/clean-lib-tests.js` so compiled `*.test.js` / `*.test.d.ts` are not shipped under `lib/`.
 - Run `npm audit` after dependency changes.
+- **CI:** GitHub Actions publishes with a **granular `NPM_TOKEN`** (environment `npm-publish`). Provenance is disabled for token-based publish (`NPM_CONFIG_PROVENANCE=false`) to avoid `E404` conflicts between OIDC provenance and classic token auth; you can later switch to [Trusted Publishing](https://docs.npmjs.com/trusted-publishers) on npm if you want OIDC-only releases. **Local** publishes use `npm run publish:local` after `npm run build` and `node utils/pre-publish.js --version <semver>`.
+- **`npm ERR! E404` on publish** (scoped package): often **no publish permission** on `@hirez10`, wrong npm user, or an expired/under-scoped token — npm sometimes reports that as 404. Confirm org membership and token **publish** rights on [npmjs.com](https://www.npmjs.com). If **GitHub** already shows a newer `hirez-v*` release than npm, fix the token/workflow then follow [npm publish recovery](./CONTRIBUTING.md#npm-publish-recovery-github-ahead-of-npm).
 
 ## Upstream
 
-Security behavior in this document applies on top of [eshaham/israeli-bank-scrapers](https://github.com/eshaham/israeli-bank-scrapers). See `upstreamSync` in `package.json` for the exact upstream tag and commit this fork last merged.
+Security behavior in this document applies on top of [eshaham/israeli-bank-scrapers](https://github.com/eshaham/israeli-bank-scrapers).
+
+**Last merged upstream release:** **[v6.7.4](https://github.com/eshaham/israeli-bank-scrapers/releases/tag/v6.7.4)** ([`847f5f74e3923c3993b802c7a25fe12b30c1d18c`](https://github.com/eshaham/israeli-bank-scrapers/commit/847f5f74e3923c3993b802c7a25fe12b30c1d18c)). The same values are recorded under `upstreamSync` in `package.json` for automation and release notes.

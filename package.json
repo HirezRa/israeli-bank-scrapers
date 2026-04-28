@@ -1,19 +1,18 @@
 {
   "name": "@hirez10/israeli-bank-scrapers",
-  "version": "1.0.7",
+  "version": "1.0.9",
   "private": true,
   "upstreamSync": {
     "repo": "eshaham/israeli-bank-scrapers",
     "tag": "v6.7.4",
     "commit": "847f5f74e3923c3993b802c7a25fe12b30c1d18c"
   },
-  "description": "Provide scrapers for all major Israeli banks and credit card companies",
+  "description": "Hardened fork of eshaham/israeli-bank-scrapers (upstream base v6.7.4). Scrapers for Israeli banks and credit card companies.",
   "engines": {
     "node": ">= 22.13.0"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -33,7 +32,11 @@
     "postbuild": "node utils/clean-lib-tests.js",
     "prepare:core": "git reset --hard && node utils/prepare-israeli-bank-scrapers-core.js && npm i --package-lock-only && npm ci && npm run lint:fix && npm run build",
     "prepare:default": "git reset --hard && npm ci && npm run build",
-    "reset": "git reset --hard && npm ci"
+    "reset": "git reset --hard && npm ci",
+    "publish:local": "node utils/npm-publish-local.js",
+    "sync:upstream": "node utils/sync-upstream.js status",
+    "sync:upstream:merge": "node utils/sync-upstream.js merge --yes",
+    "sync:upstream:metadata": "node utils/sync-upstream.js update-metadata"
   },
   "repository": {
     "type": "git",
