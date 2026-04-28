@@ -31,6 +31,12 @@ This is **not** a claim that the code is “fully secure” or that all issues a
 
 This fork tracks **[eshaham/israeli-bank-scrapers](https://github.com/eshaham/israeli-bank-scrapers)**. Last merged upstream release: **[v6.7.4](https://github.com/eshaham/israeli-bank-scrapers/releases/tag/v6.7.4)** ([`847f5f74e3923c3993b802c7a25fe12b30c1d18c`](https://github.com/eshaham/israeli-bank-scrapers/commit/847f5f74e3923c3993b802c7a25fe12b30c1d18c)). The same tag and commit are recorded under `upstreamSync` in [`package.json`](./package.json) for automation and release notes.
 
+**Sync status:** Upstream [latest release](https://github.com/eshaham/israeli-bank-scrapers/releases/latest) is **v6.7.4** — this fork is aligned. When upstream publishes a newer version, maintainers should merge `upstream/master` and run `npm run sync:upstream:metadata` (see [Upstream sync](./CONTRIBUTING.md#upstream-sync-maintainers)).
+
+### Fork releases (npm vs GitHub)
+
+This fork’s [GitHub releases](https://github.com/HirezRa/israeli-bank-scrapers/releases) use tags **`hirez-v1.x.x`**. The numeric part is the same **semver** published to npm as [@hirez10/israeli-bank-scrapers](https://www.npmjs.com/package/@hirez10/israeli-bank-scrapers). If npm lags behind GitHub, the Release workflow likely failed on **npm publish** (for example `E404` on a scoped package: missing or underpowered `NPM_TOKEN`, or org publish rights on `@hirez10`). See [npm publish recovery](./CONTRIBUTING.md#npm-publish-recovery-github-ahead-of-npm).
+
 > Important!
 > 
 > The scrapers are set to use timezone `Asia/Jerusalem` to avoid conflicts in case you're running the scrapers outside Israel.
@@ -271,7 +277,7 @@ result = {
 # Getting deployed version of latest changes in master
 Upstream deploys [`israeli-bank-scrapers`](https://www.npmjs.com/package/israeli-bank-scrapers) to npm when changes land on its main branch, on its own release cadence.
 
-**This fork** publishes separately as [@hirez10/israeli-bank-scrapers](https://www.npmjs.com/package/@hirez10/israeli-bank-scrapers). The version in this repo’s [`package.json`](./package.json) is the source of truth for the next publish; confirm the latest published release on [npm](https://www.npmjs.com/package/@hirez10/israeli-bank-scrapers).
+**This fork** publishes separately as [@hirez10/israeli-bank-scrapers](https://www.npmjs.com/package/@hirez10/israeli-bank-scrapers). The latest **GitHub** tag (`hirez-v*`) is the release line; [`package.json`](./package.json) `version` should match that line between publishes. Always confirm what **npm** actually serves on the [package page](https://www.npmjs.com/package/@hirez10/israeli-bank-scrapers) — it can lag if CI publish fails.
 
 # `Israeli-bank-scrapers-core` library
 
