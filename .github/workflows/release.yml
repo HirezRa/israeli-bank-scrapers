@@ -22,13 +22,6 @@ jobs:
         with:
           # semantic-release needs full history and tags to compute the next version from the last release tag.
           fetch-depth: 0
-      - name: Verify npm authentication
-        run: |
-          if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
-            echo "::error::NPM_TOKEN is missing in the npm-publish environment. GitHub releases will succeed but npm will stay behind (E404 on publish)."
-            exit 1
-          fi
-          npm whoami --registry https://registry.npmjs.org/
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -36,6 +29,14 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - name: Upgrade npm for OIDC support
         run: npm install -g npm@latest
+      - name: Verify npm authentication
+        run: |
+          if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
+            echo "::error::NPM_TOKEN is missing in the npm-publish environment. GitHub releases will succeed but npm will stay behind."
+            exit 1
+          fi
+          # setup-node@v4 writes an .npmrc with _authToken=${NODE_AUTH_TOKEN}, so whoami works only after that step.
+          npm whoami
       - name: Verify npm version
         run: |
           echo "Node version: $(node -v)"
