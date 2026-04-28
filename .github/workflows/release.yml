@@ -81,13 +81,8 @@ jobs:
         run: npm publish --access public --ignore-scripts
         env:
           NPM_CONFIG_PROVENANCE: "false"
-      - name: Prepare release of core to NPM
-        if: steps.semantic.outputs.new_release_published == 'true'
-        run: |
-          npm run prepare:core
-          node utils/pre-publish.js --version ${{ steps.semantic.outputs.new_release_version }}
-      - name: Publish core package to npm
-        if: steps.semantic.outputs.new_release_published == 'true'
-        run: npm publish --access public --ignore-scripts
-        env:
-          NPM_CONFIG_PROVENANCE: "false"
+      # NOTE: This fork no longer publishes the unscoped `israeli-bank-scrapers-core` package.
+      # The core publish flow targeted upstream's package name (already at 6.7.4) and would either
+      # collide with upstream's release line or be rejected by npm because 1.0.x < 6.7.4. If a core
+      # variant is ever needed for this fork, publish it under the @hirez10 scope instead and
+      # restore dedicated steps here.
