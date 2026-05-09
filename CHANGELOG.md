@@ -2,7 +2,17 @@
 
 All notable changes to this fork (`@hirez10/israeli-bank-scrapers`) are documented here. Release versions and Git tags are produced by [semantic-release](https://github.com/semantic-release/semantic-release) (`hirez-v*` tags).
 
-**Source of truth for published releases:** [GitHub Releases — HirezRa/israeli-bank-scrapers](https://github.com/HirezRa/israeli-bank-scrapers/releases). Latest tag: [`hirez-v1.0.15`](https://github.com/HirezRa/israeli-bank-scrapers/releases/tag/hirez-v1.0.15) (2026-05-09). If this file lags a tag, follow the release notes on GitHub.
+**Source of truth for published releases:** [GitHub Releases — HirezRa/israeli-bank-scrapers](https://github.com/HirezRa/israeli-bank-scrapers/releases). Target / current publish line: **`1.0.16`** (tag [`hirez-v1.0.16`](https://github.com/HirezRa/israeli-bank-scrapers/releases/tag/hirez-v1.0.16) when released). If this file lags CI, follow GitHub.
+
+## [1.0.16] (2026-05-10)
+
+### English
+
+- **Release hygiene:** Bump package semver to **1.0.16** and align README, CONTRIBUTING, and this changelog with the publish line (`@hirez10/israeli-bank-scrapers`).
+
+### עברית
+
+- סנכרון גרסה 1.0.16 ותיעוד (README, CONTRIBUTING, CHANGELOG) מול קו הפרסום.
 
 ## [1.0.15] (2026-05-09)
 
