@@ -4,7 +4,17 @@ All notable changes to this fork (`@hirez10/israeli-bank-scrapers`) are document
 
 ## [Unreleased]
 
-<!-- Keep empty between releases until new changes accumulate. -->
+### English
+
+- **Yahav — statement-loaded enforcement false negative:** `enforceYahavStatementLoaded` no longer fails when the oldest visible transaction is newer than the requested from-date *as long as the from-date filter is actually applied on screen* (`fromDateApplied`, derived from `snap.dateInputs`). Previously a legitimate full statement (enough rows + salary present) was rejected just because the account had no transactions before the from-date.
+- **Yahav — `oldestDateToken` chronological sort:** date tokens are now sorted chronologically (parsed `dd/MM/yyyy`) instead of lexically, so e.g. `01/04/2026` no longer sorts before `11/03/2026`. Fixes both the enforcement check and `buildYahavCoverageDiagnostics`.
+
+### עברית
+
+- יהב: `enforceYahavStatementLoaded` לא נכשל יותר כשהתנועה הישנה ביותר חדשה מה־from המבוקש, כל עוד סינון ה־from הוחל בפועל במסך — מונע דחייה של סטייטמנט שלם תקין.
+- יהב: `oldestDateToken` ממוין כרונולוגית (פירוק `dd/MM/yyyy`) במקום לקסיקלית.
+
+> נשמר בסנכרון עם overlay של Finance_App. ייכלל ב־release הבא של הפורק.
 
 ## [1.0.25] (2026-06-10)
 
