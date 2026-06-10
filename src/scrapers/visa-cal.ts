@@ -6,7 +6,7 @@ import { fetchPost } from '../helpers/fetch';
 import { getCurrentUrl, waitForNavigation } from '../helpers/navigation';
 import { getFromSessionStorage } from '../helpers/storage';
 import { filterOldTransactions, getRawTransaction } from '../helpers/transactions';
-import { waitUntil } from '../helpers/waiting';
+import { sleep, waitUntil } from '../helpers/waiting';
 import { TransactionStatuses, TransactionTypes, type Transaction } from '../transactions';
 import { BaseScraperWithBrowser, LoginResults, type LoginOptions } from './base-scraper-with-browser';
 import { type ScraperScrapingResult, type ScraperOptions } from './interface';
@@ -33,6 +33,43 @@ const InvalidPasswordMessage = 'שם המשתמש או הסיסמה שהוזנו
 const ChangePasswordMessage = 'להחליף סיסמה';
 
 const debug = getDebug('visa-cal');
+
+const API_RETRY_ATTEMPTS = 3;
+const API_RETRY_BASE_DELAY_MS = 2_000;
+
+/**
+ * Cal's API occasionally returns an empty body or a transient non-success status
+ * (WAF/throttling), which previously failed the whole scrape on the first hit.
+ * Retries with linear backoff; `shouldRetry` lets callers treat soft failures
+ * (e.g. statusCode !== 1) as retryable as well.
+ */
+async function fetchPostWithRetry<TResult = any>(
+  url: string,
+  data: Record<string, any>,
+  extraHeaders: Record<string, any>,
+  shouldRetry: (result: TResult) => boolean = () => false,
+): Promise<TResult> {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= API_RETRY_ATTEMPTS; attempt += 1) {
+    try {
+      const result = await fetchPost<TResult>(url, data, extraHeaders);
+      if (attempt === API_RETRY_ATTEMPTS || !shouldRetry(result)) {
+        return result;
+      }
+      debug(`transient API response from ${url} (attempt ${attempt}/${API_RETRY_ATTEMPTS}), retrying`);
+    } catch (e) {
+      lastError = e;
+      if (attempt === API_RETRY_ATTEMPTS) {
+        throw e;
+      }
+      debug(
+        `fetchPost failed for ${url} (attempt ${attempt}/${API_RETRY_ATTEMPTS}): ${e instanceof Error ? e.message : String(e)}, retrying`,
+      );
+    }
+    await sleep(API_RETRY_BASE_DELAY_MS * attempt);
+  }
+  throw lastError;
+}
 
 enum TrnTypeCode {
   regular = '5',
@@ -465,7 +502,7 @@ class VisaCalScraper extends BaseScraperWithBrowser<ScraperSpecificCredentials> 
     const futureMonthsToScrape = this.options.futureMonthsToScrape ?? 1;
 
     debug('fetch frames (misgarot) of cards');
-    const frames = await fetchPost<FramesResponse>(
+    const frames = await fetchPostWithRetry<FramesResponse>(
       FRAMES_REQUEST_ENDPOINT,
       { cardsForFrameData: cards.map(({ cardUniqueId }) => ({ cardUniqueId })) },
       {
@@ -486,7 +523,7 @@ class VisaCalScraper extends BaseScraperWithBrowser<ScraperSpecificCredentials> 
         );
 
         debug(`fetch pending transactions for card ${card.cardUniqueId}`);
-        let pendingData = await fetchPost(
+        let pendingData = await fetchPostWithRetry(
           PENDING_TRANSACTIONS_REQUEST_ENDPOINT,
           { cardUniqueIDArray: [card.cardUniqueId] },
           {
@@ -495,12 +532,18 @@ class VisaCalScraper extends BaseScraperWithBrowser<ScraperSpecificCredentials> 
             'Content-Type': 'application/json',
             ...apiHeaders,
           },
-        );
+        ).catch(e => {
+          // Pending transactions are best-effort (failures already tolerated below).
+          debug(
+            `failed to fetch pending transactions for card ${card.last4Digits}: ${e instanceof Error ? e.message : String(e)}`,
+          );
+          return null;
+        });
 
         debug(`fetch completed transactions for card ${card.cardUniqueId}`);
         for (let i = 0; i <= months; i++) {
           const month = finalMonthToFetchMoment.clone().subtract(i, 'months');
-          const monthData = await fetchPost(
+          const monthData = await fetchPostWithRetry(
             TRANSACTIONS_REQUEST_ENDPOINT,
             { cardUniqueId: card.cardUniqueId, month: month.format('M'), year: month.format('YYYY') },
             {
@@ -509,6 +552,7 @@ class VisaCalScraper extends BaseScraperWithBrowser<ScraperSpecificCredentials> 
               'Content-Type': 'application/json',
               ...apiHeaders,
             },
+            result => (result as { statusCode?: number } | null)?.statusCode !== 1,
           );
 
           if (monthData?.statusCode !== 1)

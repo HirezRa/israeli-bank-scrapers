@@ -6,6 +6,40 @@ All notable changes to this fork (`@hirez10/israeli-bank-scrapers`) are document
 
 <!-- Keep empty between releases until new changes accumulate. -->
 
+## [1.0.27] (2026-06-10)
+
+Tag **`hirez-v1.0.27`**. Hardens Visa Cal against transient API failures observed in production (`Unexpected end of JSON input`, empty-title soft failures).
+
+### English
+
+- **Visa Cal — API retry with backoff:** `GetFrameStatus`, `getClearanceRequests` and `getCardTransactionsDetails` are now retried up to 3 times with linear backoff (2s/4s). Monthly transaction requests also treat a soft failure (`statusCode !== 1`) as retryable. Previously a single empty/truncated response from Cal's API (WAF/throttling) failed the whole scrape.
+- **Visa Cal — pending transactions are best-effort:** a hard failure fetching pending (clearance) transactions no longer aborts the scrape; it degrades to "no pending data", matching the existing soft-failure tolerance.
+- **`fetchPost` diagnostics:** invalid/empty JSON responses now raise `fetchPost parse error: ..., url, status, bodyLength, bodyStart` instead of a bare `Unexpected end of JSON input`, so logs identify the failing endpoint and HTTP status.
+
+### עברית
+
+- ויזה כאל: קריאות ה‑API (מסגרות, עסקאות ממתינות, עסקאות חודשיות) מנוסות עד 3 פעמים עם השהיה (2/4 שניות); תשובה "רכה" עם `statusCode !== 1` בעסקאות חודשיות נחשבת גם היא ברת‑ניסיון‑חוזר. קודם תשובה ריקה בודדת מה‑API (WAF/האטה) הפילה את כל הסריקה.
+- ויזה כאל: כשל בעסקאות ממתינות לא מפיל יותר את הסריקה — ממשיכים בלי נתוני ממתינות.
+- `fetchPost`: שגיאת פרסור כוללת כעת URL, סטטוס HTTP ותחילת גוף התשובה במקום `Unexpected end of JSON input` עירום.
+
+## [1.0.26] (2026-06-10)
+
+Tag **`hirez-v1.0.26`** ([PR #48](https://github.com/HirezRa/israeli-bank-scrapers/pull/48)). Production-verified on Finance_App (PCT 115): 46 txns, full 91-day coverage, `partial=false`.
+
+### English
+
+- **Yahav — statement-loaded enforcement false negative:** `enforceYahavStatementLoaded` no longer fails when the oldest visible transaction is newer than the requested from-date *as long as the from-date filter is actually applied on screen* (`fromDateApplied`, derived from `snap.dateInputs`). Previously a legitimate full statement (enough rows + salary present) was rejected just because the account had no transactions before the from-date.
+- **Yahav — `oldestDateToken` chronological sort:** date tokens are now sorted chronologically (parsed `dd/MM/yyyy`) instead of lexically, so e.g. `01/04/2026` no longer sorts before `11/03/2026`. Fixes both the enforcement check and `buildYahavCoverageDiagnostics`.
+- **Yahav — widest statement scope:** the statement scope dropdown now prefers "all" > "last 3 months" > "current month" (was current-month first, which starved coverage to ~9 txns on 90–180 day sync windows).
+
+### עברית
+
+- יהב: `enforceYahavStatementLoaded` לא נכשל יותר כשהתנועה הישנה ביותר חדשה מה־from המבוקש, כל עוד סינון ה־from הוחל בפועל במסך — מונע דחייה של סטייטמנט שלם תקין.
+- יהב: `oldestDateToken` ממוין כרונולוגית (פירוק `dd/MM/yyyy`) במקום לקסיקלית.
+- יהב: בורר טווח הסטייטמנט מעדיף "הכל" → "3 חודשים אחרונים" → "מתחילת החודש" (קודם הועדף "מתחילת החודש" — כיסוי חסר בחלונות 90–180 יום).
+
+> מסונכרן עם overlay של Finance_App; אומת בפרודקשן.
+
 ## [1.0.25] (2026-06-10)
 
 Tag **`hirez-v1.0.25`**. Upstream sync to **[eshaham v6.7.5](https://github.com/eshaham/israeli-bank-scrapers/releases/tag/v6.7.5)** (`ddec3111f8e1fa7f7850c1c899a79adb7b782eed`).
