@@ -13,7 +13,7 @@ const exe = process.platform === 'win32' ? 'gitleaks.exe' : 'gitleaks';
 const portable = path.join(repoRoot, 'node_modules', '.bin-tools', 'gitleaks', exe);
 const cmd = fs.existsSync(portable) ? portable : 'gitleaks';
 
-const res = spawnSync(cmd, ['git', '-v', '--redact', '.'], {
+const res = spawnSync(cmd, ['git', '-v', '--redact', '--config', '.gitleaks.toml', '.'], {
   cwd: repoRoot,
   stdio: 'inherit',
 });
