@@ -32,11 +32,11 @@ jobs:
       - name: Verify npm authentication
         run: |
           if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
-            echo "::error::NPM_TOKEN is missing in the npm-publish environment. GitHub releases will succeed but npm will stay behind."
-            exit 1
+            echo "::warning::NPM_TOKEN is missing in the npm-publish environment. The GitHub release/tag will still be created; npm publish will be skipped."
+          else
+            # setup-node@v4 writes an .npmrc with _authToken=${NODE_AUTH_TOKEN}, so whoami works only after that step.
+            npm whoami
           fi
-          # setup-node@v4 writes an .npmrc with _authToken=${NODE_AUTH_TOKEN}, so whoami works only after that step.
-          npm whoami
       - name: Verify npm version
         run: |
           echo "Node version: $(node -v)"
@@ -80,13 +80,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Prepare release of default to NPM
-        if: steps.semantic.outputs.new_release_published == 'true'
+        if: steps.semantic.outputs.new_release_published == 'true' && env.NODE_AUTH_TOKEN != ''
         run: |
           node utils/pre-publish.js --version ${{ steps.semantic.outputs.new_release_version }}
       # Provenance via GitHub OIDC can conflict with classic/granular NPM_TOKEN publishes (npm may return E404).
       # Disable automatic provenance for token-based publish; re-enable Trusted Publishing on npmjs if you want OIDC-only.
       - name: Publish default package to npm
-        if: steps.semantic.outputs.new_release_published == 'true'
+        if: steps.semantic.outputs.new_release_published == 'true' && env.NODE_AUTH_TOKEN != ''
         run: npm publish --access public --ignore-scripts
         env:
           NPM_CONFIG_PROVENANCE: "false"
