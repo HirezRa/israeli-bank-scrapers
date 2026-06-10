@@ -69,6 +69,13 @@ scripts/yahav-salary-check.cjs
 # Finance app export logs (may contain account metadata); keep local only
 finance-app-logs*.json
 
+# Ad-hoc data exports / scratch queries (may contain real transactions — never commit)
+*.csv
+*.tsv
+*.xlsx
+*.dump
+scripts/tmp-*
+
 # IDEs
 .idea
 .vscode
