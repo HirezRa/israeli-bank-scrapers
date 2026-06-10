@@ -6,6 +6,22 @@ All notable changes to this fork (`@hirez10/israeli-bank-scrapers`) are document
 
 <!-- Keep empty between releases until new changes accumulate. -->
 
+## [1.0.27] (2026-06-10)
+
+Tag **`hirez-v1.0.27`**. Hardens Visa Cal against transient API failures observed in production (`Unexpected end of JSON input`, empty-title soft failures).
+
+### English
+
+- **Visa Cal — API retry with backoff:** `GetFrameStatus`, `getClearanceRequests` and `getCardTransactionsDetails` are now retried up to 3 times with linear backoff (2s/4s). Monthly transaction requests also treat a soft failure (`statusCode !== 1`) as retryable. Previously a single empty/truncated response from Cal's API (WAF/throttling) failed the whole scrape.
+- **Visa Cal — pending transactions are best-effort:** a hard failure fetching pending (clearance) transactions no longer aborts the scrape; it degrades to "no pending data", matching the existing soft-failure tolerance.
+- **`fetchPost` diagnostics:** invalid/empty JSON responses now raise `fetchPost parse error: ..., url, status, bodyLength, bodyStart` instead of a bare `Unexpected end of JSON input`, so logs identify the failing endpoint and HTTP status.
+
+### עברית
+
+- ויזה כאל: קריאות ה‑API (מסגרות, עסקאות ממתינות, עסקאות חודשיות) מנוסות עד 3 פעמים עם השהיה (2/4 שניות); תשובה "רכה" עם `statusCode !== 1` בעסקאות חודשיות נחשבת גם היא ברת‑ניסיון‑חוזר. קודם תשובה ריקה בודדת מה‑API (WAF/האטה) הפילה את כל הסריקה.
+- ויזה כאל: כשל בעסקאות ממתינות לא מפיל יותר את הסריקה — ממשיכים בלי נתוני ממתינות.
+- `fetchPost`: שגיאת פרסור כוללת כעת URL, סטטוס HTTP ותחילת גוף התשובה במקום `Unexpected end of JSON input` עירום.
+
 ## [1.0.26] (2026-06-10)
 
 Tag **`hirez-v1.0.26`** ([PR #48](https://github.com/HirezRa/israeli-bank-scrapers/pull/48)). Production-verified on Finance_App (PCT 115): 46 txns, full 91-day coverage, `partial=false`.
