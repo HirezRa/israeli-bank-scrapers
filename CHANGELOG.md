@@ -4,17 +4,25 @@ All notable changes to this fork (`@hirez10/israeli-bank-scrapers`) are document
 
 ## [Unreleased]
 
+<!-- Keep empty between releases until new changes accumulate. -->
+
+## [1.0.26] (2026-06-10)
+
+Tag **`hirez-v1.0.26`** ([PR #48](https://github.com/HirezRa/israeli-bank-scrapers/pull/48)). Production-verified on Finance_App (PCT 115): 46 txns, full 91-day coverage, `partial=false`.
+
 ### English
 
 - **Yahav — statement-loaded enforcement false negative:** `enforceYahavStatementLoaded` no longer fails when the oldest visible transaction is newer than the requested from-date *as long as the from-date filter is actually applied on screen* (`fromDateApplied`, derived from `snap.dateInputs`). Previously a legitimate full statement (enough rows + salary present) was rejected just because the account had no transactions before the from-date.
 - **Yahav — `oldestDateToken` chronological sort:** date tokens are now sorted chronologically (parsed `dd/MM/yyyy`) instead of lexically, so e.g. `01/04/2026` no longer sorts before `11/03/2026`. Fixes both the enforcement check and `buildYahavCoverageDiagnostics`.
+- **Yahav — widest statement scope:** the statement scope dropdown now prefers "all" > "last 3 months" > "current month" (was current-month first, which starved coverage to ~9 txns on 90–180 day sync windows).
 
 ### עברית
 
 - יהב: `enforceYahavStatementLoaded` לא נכשל יותר כשהתנועה הישנה ביותר חדשה מה־from המבוקש, כל עוד סינון ה־from הוחל בפועל במסך — מונע דחייה של סטייטמנט שלם תקין.
 - יהב: `oldestDateToken` ממוין כרונולוגית (פירוק `dd/MM/yyyy`) במקום לקסיקלית.
+- יהב: בורר טווח הסטייטמנט מעדיף "הכל" → "3 חודשים אחרונים" → "מתחילת החודש" (קודם הועדף "מתחילת החודש" — כיסוי חסר בחלונות 90–180 יום).
 
-> נשמר בסנכרון עם overlay של Finance_App. ייכלל ב־release הבא של הפורק.
+> מסונכרן עם overlay של Finance_App; אומת בפרודקשן.
 
 ## [1.0.25] (2026-06-10)
 
