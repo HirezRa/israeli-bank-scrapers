@@ -30,12 +30,18 @@ jobs:
       - name: Upgrade npm for OIDC support
         run: npm install -g npm@latest
       - name: Verify npm authentication
+        id: npmauth
         run: |
+          # Never fail the job here: the GitHub release/tag must be created even when npm is unavailable.
+          # setup-node@v4 writes an .npmrc with _authToken=${NODE_AUTH_TOKEN}, so whoami works only after that step.
           if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
-            echo "::warning::NPM_TOKEN is missing in the npm-publish environment. The GitHub release/tag will still be created; npm publish will be skipped."
+            echo "::warning::NPM_TOKEN is missing — npm publish will be skipped; GitHub release/tag still created."
+            echo "npm_ok=false" >> "$GITHUB_OUTPUT"
+          elif npm whoami >/dev/null 2>&1; then
+            echo "npm_ok=true" >> "$GITHUB_OUTPUT"
           else
-            # setup-node@v4 writes an .npmrc with _authToken=${NODE_AUTH_TOKEN}, so whoami works only after that step.
-            npm whoami
+            echo "::warning::NPM_TOKEN is present but unauthorized (npm whoami failed) — npm publish will be skipped; GitHub release/tag still created."
+            echo "npm_ok=false" >> "$GITHUB_OUTPUT"
           fi
       - name: Verify npm version
         run: |
@@ -80,13 +86,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Prepare release of default to NPM
-        if: steps.semantic.outputs.new_release_published == 'true' && env.NODE_AUTH_TOKEN != ''
+        if: steps.semantic.outputs.new_release_published == 'true' && steps.npmauth.outputs.npm_ok == 'true'
         run: |
           node utils/pre-publish.js --version ${{ steps.semantic.outputs.new_release_version }}
       # Provenance via GitHub OIDC can conflict with classic/granular NPM_TOKEN publishes (npm may return E404).
       # Disable automatic provenance for token-based publish; re-enable Trusted Publishing on npmjs if you want OIDC-only.
       - name: Publish default package to npm
-        if: steps.semantic.outputs.new_release_published == 'true' && env.NODE_AUTH_TOKEN != ''
+        if: steps.semantic.outputs.new_release_published == 'true' && steps.npmauth.outputs.npm_ok == 'true'
         run: npm publish --access public --ignore-scripts
         env:
           NPM_CONFIG_PROVENANCE: "false"
