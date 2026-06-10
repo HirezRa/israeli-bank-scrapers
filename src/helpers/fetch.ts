@@ -38,7 +38,16 @@ export async function fetchPost<TResult = any>(
     body: JSON.stringify(data),
   };
   const result = await fetch(url, request);
-  return result.json();
+  const body = await result.text();
+  try {
+    return JSON.parse(body) as TResult;
+  } catch (e) {
+    // An empty/truncated body (e.g. WAF throttling returning 200 with no content)
+    // used to surface as a bare "Unexpected end of JSON input" with no context.
+    throw new Error(
+      `fetchPost parse error: ${e instanceof Error ? e.message : String(e)}, url: ${url}, status: ${result.status}, bodyLength: ${body.length}, bodyStart: ${body.slice(0, 120)}`,
+    );
+  }
 }
 
 export async function fetchGraphql<TResult>(
